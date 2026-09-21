@@ -1,0 +1,1 @@
+Yes, `sync.retry_limit` in config.toml. Default is 3, range 1 to 10.

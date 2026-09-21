@@ -1,0 +1,11 @@
+Add retry to the sync worker
+
+This PR adds a retry loop to the sync worker.
+
+## Summary
+
+Retries three times.
+
+## Test plan
+
+- ran the unit tests

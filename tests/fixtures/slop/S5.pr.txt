@@ -1,0 +1,19 @@
+Add retry with exponential backoff to the sync worker and the webhook dispatcher today
+
+## Summary
+
+- retries the sync worker
+- retries the webhook dispatcher
+- adds a jitter helper
+- adds a metric
+- adds a test
+- updates the docs
+- bumps the timeout
+
+## Details
+
+The worker reads the queue.
+
+## Notes
+
+Nothing else changed.

@@ -1,0 +1,4 @@
+Add retry with backoff to the sync worker
+
+Transient 502s from the webhook host dropped events. Retries three times
+with jitter, then logs the event id and gives up.

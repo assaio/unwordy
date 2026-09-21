@@ -1,0 +1,20 @@
+{
+  "name": "unwordy",
+  "interface": {
+    "displayName": "unwordy"
+  },
+  "plugins": [
+    {
+      "name": "unwordy",
+      "source": {
+        "source": "local",
+        "path": "./"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Developer Tools"
+    }
+  ]
+}

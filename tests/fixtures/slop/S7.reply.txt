@@ -1,0 +1,15 @@
+Great question! Here is the full picture of how the retry limit works.
+
+The retry limit lives in config.toml under the sync section.
+It is read once at startup by the worker process.
+The default value is three attempts.
+The value is validated to be between one and ten.
+A value outside that range falls back to the default.
+The worker logs the resolved value at startup.
+Each attempt waits twice as long as the previous one.
+The first wait is one second.
+The last wait is therefore four seconds.
+After the last attempt the event id is logged.
+The event is then dropped from the queue.
+
+Let me know if you want me to walk through the backoff maths as well.

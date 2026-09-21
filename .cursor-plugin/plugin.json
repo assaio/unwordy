@@ -1,0 +1,20 @@
+{
+  "name": "unwordy",
+  "version": "0.2.0",
+  "description": "Makes coding agents write like a terse developer in code comments, commits, PRs, tracker comments and replies. Hooks block AI attribution and filler before it reaches the repo.",
+  "author": {
+    "name": "assaio",
+    "url": "https://github.com/assaio"
+  },
+  "homepage": "https://github.com/assaio/unwordy",
+  "repository": "https://github.com/assaio/unwordy",
+  "license": "MIT",
+  "keywords": [
+    "commit-messages",
+    "pull-requests",
+    "code-comments",
+    "writing-style"
+  ],
+  "skills": "./skills/",
+  "hooks": "./hooks/cursor.hooks.json"
+}

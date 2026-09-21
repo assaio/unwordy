@@ -1,0 +1,37 @@
+{
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
+  "name": "unwordy",
+  "version": "0.2.0",
+  "description": "Makes coding agents write like a terse developer in code comments, commits, PRs, tracker comments and replies. Hooks block AI attribution and filler before it reaches the repo.",
+  "author": {
+    "name": "assaio",
+    "url": "https://github.com/assaio"
+  },
+  "homepage": "https://github.com/assaio/unwordy",
+  "repository": "https://github.com/assaio/unwordy",
+  "license": "MIT",
+  "keywords": [
+    "commit-messages",
+    "pull-requests",
+    "code-comments",
+    "writing-style",
+    "hooks"
+  ],
+  "extensions": {
+    "com.openai": {
+      "hooks": "./hooks/hooks.json",
+      "interface": {
+        "displayName": "unwordy",
+        "shortDescription": "Write like a terse developer, not an assistant",
+        "longDescription": "Loads a short style profile at session start, adds skills for commit messages, PR bodies and tracker comments, and blocks AI attribution trailers and restating comments with deterministic hooks.",
+        "developerName": "assaio",
+        "category": "Developer Tools",
+        "capabilities": ["Read", "Write"],
+        "defaultPrompt": [
+          "Write the commit message for these changes",
+          "Rewrite this PR description so a human would write it"
+        ]
+      }
+    }
+  }
+}

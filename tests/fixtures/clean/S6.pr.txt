@@ -1,0 +1,4 @@
+Add retry to the sync worker
+
+Transient 502s dropped events. Retries three times with jitter, then logs
+the event id and gives up. Tested against the staging webhook host.

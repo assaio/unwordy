@@ -1,0 +1,3 @@
+refactor: simplify the payload parser
+
+The new schema makes the manual field mapping unnecessary.

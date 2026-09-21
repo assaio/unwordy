@@ -1,0 +1,5 @@
+fix: handle an empty payload
+
+The parser crashed when the webhook host sent no body.
+
+Co-Authored-By: Claude <noreply@anthropic.com>

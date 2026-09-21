@@ -1,0 +1,3 @@
+refactor: streamline the payload parser
+
+Leverage the new schema to make parsing seamless.

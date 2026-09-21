@@ -1,0 +1,16 @@
+{
+  "name": "unwordy",
+  "owner": {
+    "name": "assaio",
+    "url": "https://github.com/assaio"
+  },
+  "description": "Self-hosted marketplace for the unwordy plugin.",
+  "plugins": [
+    {
+      "name": "unwordy",
+      "source": "./",
+      "description": "Makes coding agents write like a terse developer in code comments, commits, PRs, tracker comments and replies.",
+      "category": "productivity"
+    }
+  ]
+}
