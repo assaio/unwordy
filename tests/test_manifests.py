@@ -27,6 +27,11 @@ def test_codex_overlay_matches_the_portable_extension():
     assert overlay["hooks"] == portable["hooks"]
 
 
+def test_claude_manifest_leaves_the_standard_hooks_file_alone():
+    """Claude Code loads hooks/hooks.json by itself; naming it again fails the hook load."""
+    assert "hooks" not in load(".claude-plugin/plugin.json")
+
+
 def test_both_marketplaces_list_this_plugin_from_the_repo_root():
     name = load("plugin.json")["name"]
     claude = load(".claude-plugin/marketplace.json")

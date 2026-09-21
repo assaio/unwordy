@@ -1,5 +1,15 @@
 # Changelog
 
+## v0.2.1
+
+- Claude Code loads `hooks/hooks.json` on its own, and the plugin manifest
+  named it a second time. The hook load failed on install and every rule went
+  silent, while the plugin still reported three hooks. The manifest no longer
+  declares the file. `claude plugin validate --strict` does not catch this,
+  so a test does.
+- The README shows the literal hook message for each surface, and says which
+  of the three layers, voice, skills or hooks, does the work.
+
 ## v0.2.0
 
 - Files written from the shell with `cat > file <<EOF`, `tee`, `echo` or

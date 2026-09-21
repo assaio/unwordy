@@ -1,7 +1,7 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "unwordy",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "Makes coding agents write like a terse developer in code comments, commits, PRs, tracker comments and replies. Hooks block AI attribution and filler before it reaches the repo.",
   "author": {
     "name": "assaio",
