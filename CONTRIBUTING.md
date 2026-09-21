@@ -71,6 +71,21 @@ The regexes mirror the hard rules and the length limits: no attribution, no
 `## Summary` scaffolding, no bold-label bullets, no restating or task-bound
 comments, answer first, under thirteen lines. `results/` is ignored by git.
 
+Last recorded run, `--ablation none --runs 1`, five cases in 31 seconds for
+$0.43:
+
+| Case | Score | Graders |
+|---|---|---|
+| code-comment | 1.00 | 4 of 4 |
+| commit-message | 1.00 | 5 of 5, `write` skill fired |
+| pr-body | 1.00 | 6 of 6, `write` skill fired |
+| reply | 1.00 | 4 of 4 |
+| tracker-comment | 1.00 | 6 of 6, `write` skill fired |
+
+No grader failed on good output, which is what the short form is for. The
+no-plugin arm has not been run, so there is no WITH minus W/OUT delta to
+quote; that needs the full pass and 30 agent runs.
+
 ## Manual smoke test
 
 Run this against a real session after changing hooks, skills or the manifest.
@@ -157,6 +172,28 @@ answer. To check it by hand in a normal session in the scratch repo:
    with `preset: custom` and the skill prints its path.
 4. `/unwordy:setup lazy` afterwards switches `preset:` in that file and asks
    before dropping the custom body.
+
+## The published install path
+
+What a new user runs, checked against the published repository with no model
+call. Both hosts install the tagged version and report it:
+
+```bash
+claude plugin marketplace add assaio/unwordy
+claude plugin install unwordy@unwordy --scope local
+claude plugin list --json          # enabled true, errors none
+claude plugin details unwordy      # Skills (4), Hooks (3), always-on ~281 tok
+
+codex plugin marketplace add assaio/unwordy
+codex plugin add unwordy@unwordy
+codex debug prompt-input hello | grep -o 'unwordy:[a-z]*:'
+#   unwordy:rewrite:
+#   unwordy:write:
+```
+
+Read `errors` from `claude plugin list --json`, not the inventory. A hook
+file that fails to load leaves the plugin enabled and still counted as three
+hooks in `details`, with every rule silent; only the JSON says so.
 
 ## Codex smoke test
 
