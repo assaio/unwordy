@@ -1,6 +1,6 @@
 {
   "name": "unwordy",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "description": "Makes coding agents write like a terse developer in code comments, commits, PRs, tracker comments and replies. Hooks block AI attribution and filler before it reaches the repo.",
   "author": {
     "name": "assaio",

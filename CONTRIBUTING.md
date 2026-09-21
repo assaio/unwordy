@@ -244,12 +244,40 @@ commit; the fourth writes `/tmp/unwordy-codex-home/unwordy/style.md` with
 `preset: lazy`, which shows that a skill hidden from implicit invocation still
 answers to an explicit mention.
 
-Not yet run: the first `codex exec` of this set stopped at
-`ERROR: You've hit your usage limit` before any hook fired, so the four
-results above are expectations, not observations. To see the real stdin
-payloads, add `tee -a /tmp/unwordy-hook-stdin.log` in front of the Python call
-in the cached copy's `hooks/run.sh` before running, and compare with
-`tests/test_hook.py`.
+What actually happened, Codex 0.155.1, four `codex exec` runs with the
+installed copy's `hooks/run.sh` teeing its stdin to a log:
+
+| Run | Flags | Result |
+|---|---|---|
+| session voice | `--sandbox read-only` | answered from its own profile, said the unwordy profiles "were available but not loaded"; no hook ran |
+| `git commit` with attribution | `--sandbox workspace-write` | `fatal: Unable to create '.git/index.lock': Operation not permitted`; no hook ran |
+| `git commit` with attribution | `--enable hooks --dangerously-bypass-hook-trust` | same sandbox error; no hook ran |
+| `apply_patch` adding a restating comment | `--enable hooks --dangerously-bypass-hook-trust` | the patch applied, `// This function returns the user` landed in the file; no hook ran |
+
+The log stayed empty in all four, and Codex's own log database holds no hook
+entry for those sessions, so this is not a silent failure inside `run.sh`:
+Codex never invoked it.
+
+Two causes, one documented and one open:
+
+- `features.hooks` is off by default. Without `[features] hooks = true` in
+  `~/.codex/config.toml`, Codex loads no lifecycle hooks at all. The repo did
+  not mention this before and it is the first thing to set.
+- Even with the feature on and `--dangerously-bypass-hook-trust`, nothing
+  fired in `codex exec`. The documented trust step is `/hooks` in the TUI,
+  which is interactive, so the untested path is a TUI session after trusting
+  the hooks once. Whether the bypass flag is meant to cover plugin-bundled
+  hooks in `exec` is not something this repo can settle.
+
+Also worth knowing: `--sandbox workspace-write` denies writes inside `.git`,
+so the `git commit` cases above can never reach a hook decision. Use
+`--sandbox danger-full-access` for that one, in a scratch repo.
+
+To capture payloads on the next attempt, put a `tee -a <log>` in front of the
+Python call in the *installed copy's* `hooks/run.sh`, never the repo's, and
+compare what arrives with `tests/test_hook.py`. Reinstall afterwards
+(`codex plugin remove unwordy@unwordy && codex plugin add unwordy@unwordy`)
+so the patched copy is gone.
 
 ## Cursor smoke test
 

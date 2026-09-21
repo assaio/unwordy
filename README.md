@@ -1,11 +1,13 @@
 # unwordy
 
-A plugin for Claude Code, Codex and Cursor that makes your coding agent write
-like a developer on your team: comments only where the code cannot say why,
-commits and PRs that fit on one screen, tracker replies that answer the
-question. Deterministic hooks deny AI attribution trailers, `## Summary`
-scaffolding and comments that restate the code before the tool call runs, so
-the slop never reaches the diff.
+**Make your coding agent write like a developer, not like a chatbot.**
+
+unwordy is a plugin for Claude Code, Codex and Cursor that cleans up the text
+an AI agent writes around your code: commit messages, pull request
+descriptions, code comments and tracker replies. It does not score your prose
+and it does not send it to a second model. It denies the tool call before the
+slop reaches your repository, and tells the agent in one line which rule it
+broke.
 
 ```diff
 - feat: Implement comprehensive retry mechanism for sync worker
@@ -32,7 +34,21 @@ unwordy S6c: opener 'This commit adds'. Start with the change itself.
 ```
 
 The agent writes the second version instead. No model call is involved on the
-way: the rules are regular expressions with ids you can look up.
+way: every rule is a regular expression with an id you can look up, switch off
+or point at a single surface.
+
+## Why
+
+An agent that writes `// This function returns the user`, opens a pull request
+under `## Summary` and `## Test plan` headers and signs the commit
+`Co-Authored-By: Claude` is not wrong. It is the house style of a chatbot,
+the thing people have started calling AI slop, and a reviewer pays for it on
+every diff.
+
+Writing your conventions into `CLAUDE.md` or `AGENTS.md` helps until it does
+not: it is advice competing for attention with the task, and it goes quiet
+three turns into a long session. A hook does not get distracted. It runs on
+the call, every time, for the price of a regular expression.
 
 ## Install
 
@@ -58,6 +74,9 @@ tokens: they are Python scripts that return a decision.
 | Style profile injected as context | every session start, and after `/compact` | ~260 tokens |
 | Skills (`setup`, `sync`, `rewrite`, `write`) | when you or the agent invoke them | listing ~281 tokens, body on invoke |
 | Hooks on `Edit`/`Write`, `Bash`, MCP calls, `Stop` | every matching tool call | zero tokens |
+
+The four skills are Agent Skills in the portable format that Claude Code,
+Codex and Cursor all read, so one directory serves three hosts.
 
 Hard rules (H1-H4) deny the tool call with a one-line reason and the agent
 rewrites. Soft rules (S1-S7) warn by default; `strict: block` makes them deny
@@ -333,18 +352,41 @@ codex plugin add unwordy@unwordy
 Codex installs the plugin under `~/.codex/plugins/cache/unwordy/` and lists
 the skills as `unwordy:rewrite` and `unwordy:write`. `unwordy:setup` and
 `unwordy:sync` are kept out of the model's list (`allow_implicit_invocation:
-false`), so only you invoke them, as in Claude Code. Plugin hooks run only
-after you review them once with `/hooks`. The hook contract is the same as
-Claude Code's: `Bash` and `apply_patch` (matched as `Edit|Write`) on
-`PreToolUse`, MCP tools, `SessionStart` with the same sources, `Stop` with
-`stop_hook_active` and `last_assistant_message`, the same deny JSON, and
-`CLAUDE_PLUGIN_ROOT` set for plugin hooks.
+false`), so only you invoke them, as in Claude Code. That much is verified
+against a live Codex 0.155 session.
 
-Checked against Codex 0.154 without a model call: the marketplace add and
-install from this repo, the skill listing the model sees, and the manifests.
-Still to run in a live Codex session: the voice at session start, the H4
-denial on `apply_patch` and the H1 denial on `git commit`; the exact commands
-are in `CONTRIBUTING.md`.
+**The hooks need two things turned on in Codex, and one of them is off by
+default.** Codex loads lifecycle hooks only when `features.hooks` is true,
+and it skips a plugin's hooks until you trust them once in the TUI:
+
+```toml
+# ~/.codex/config.toml
+[features]
+hooks = true
+```
+
+Then `/hooks` in the Codex TUI, once, to review and trust them. Until both
+are done the plugin still installs, still lists its skills and still reports
+its hooks, and no rule fires.
+
+The hook contract is written to match Claude Code's: `Bash` and `apply_patch`
+(matched as `Edit|Write`) on `PreToolUse`, MCP tools, `SessionStart` with the
+same sources, `Stop` with `stop_hook_active` and `last_assistant_message`, the
+same deny JSON, and `CLAUDE_PLUGIN_ROOT` set for plugin hooks, which Codex
+still sets next to its own `PLUGIN_ROOT`.
+
+Not verified, and honest about it: no unwordy hook has yet been observed
+firing inside Codex. Four `codex exec` runs with `--enable hooks
+--dangerously-bypass-hook-trust` produced no hook invocation at all, with the
+payload logged from the installed copy; the `apply_patch` in that test wrote
+the restating comment straight through. The trust step is interactive, so the
+remaining path to check is a TUI session after `/hooks`. `CONTRIBUTING.md` has
+the commands and what each one printed.
+
+Two more things to know before you test it by hand: Codex's `workspace-write`
+sandbox denies writes inside `.git`, so a `git commit` test needs
+`--sandbox danger-full-access` or an approval, and it will fail on the
+sandbox rather than on a rule.
 
 Without the plugin, `/unwordy:sync` from Claude Code writes the voice block
 into `~/.codex/AGENTS.md` and offers to install the hook entries into

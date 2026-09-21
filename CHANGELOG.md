@@ -1,6 +1,14 @@
 # Changelog
 
-## v0.2.1
+## v0.2.2
+
+- Codex loads no lifecycle hook at all until `features.hooks` is true in
+  `~/.codex/config.toml`, and it skips a plugin's hooks until `/hooks` trusts
+  them once. The README claimed only the second. Both are now in the Codex
+  section, next to what four live `codex exec` runs actually did: no hook
+  fired in any of them, including with `--dangerously-bypass-hook-trust`.
+- The README opens with the problem rather than the feature list, and the
+  Codex section no longer promises behaviour nobody has observed.
 
 - Claude Code loads `hooks/hooks.json` on its own, and the plugin manifest
   named it a second time. The hook load failed on install and every rule went
