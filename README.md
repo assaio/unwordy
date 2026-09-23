@@ -5,9 +5,9 @@
 unwordy is a plugin for Claude Code, Codex and Cursor that cleans up the text
 an AI agent writes around your code: commit messages, pull request
 descriptions, code comments and tracker replies. It does not score your prose
-and it does not send it to a second model. It denies the tool call before the
-slop reaches your repository, and tells the agent in one line which rule it
-broke.
+and it does not send it to a second model. In Claude Code, hooks can deny a
+matching tool call before it writes. Codex and Cursor hook enforcement still
+need live verification; see their sections below.
 
 ```diff
 - feat: Implement comprehensive retry mechanism for sync worker
@@ -24,8 +24,8 @@ broke.
 + 1s, 2s, 4s; after that the event id goes to the dead letter log.
 ```
 
-The commit above is not a suggestion the agent can ignore. The hook denies the
-call before git runs and hands the agent three lines:
+With the Claude Code hook active, the first commit command is denied before
+git runs and the agent receives three lines:
 
 ```text
 unwordy H1: attribution in the commit message (Co-Authored-By: Claude). Remove it and commit again.
@@ -47,41 +47,42 @@ every diff.
 
 Writing your conventions into `CLAUDE.md` or `AGENTS.md` helps until it does
 not: it is advice competing for attention with the task, and it goes quiet
-three turns into a long session. A hook does not get distracted. It runs on
-the call, every time, for the price of a regular expression.
+three turns into a long session. For tool calls it can intercept, an active
+hook checks the proposed text on each call with regular expressions.
 
 ## Install
 
 ```
 /plugin marketplace add assaio/unwordy
 /plugin install unwordy@unwordy
-/unwordy:setup
+/unwordy:init
 ```
 
 Python 3.9 or newer, standard library only. No account, no build step, no
-runtime dependency. `/unwordy:setup` writes a profile and prints its path;
+runtime dependency. `/unwordy:init` asks for a preset or examples of your own
+writing, previews the result, then writes a profile. `/unwordy:setup lazy`
+switches directly to a preset;
 everything else happens on its own from the next session.
 
-Cost: **~281 always-loaded tokens** as reported by
-`claude plugin details unwordy` (skill listings), plus about 260 tokens of
-style text injected at the start of each session. Hooks cost zero model
-tokens: they are Python scripts that return a decision.
+`claude plugin details unwordy` reports the current skill-listing cost. The
+profile adds a short session instruction. The checks themselves call no model.
 
 ## How it works
 
 | Layer | When | Cost |
 |---|---|---|
-| Style profile injected as context | every session start, and after `/compact` | ~260 tokens |
-| Skills (`setup`, `sync`, `rewrite`, `write`) | when you or the agent invoke them | listing ~281 tokens, body on invoke |
-| Hooks on `Edit`/`Write`, `Bash`, MCP calls, `Stop` | every matching tool call | zero tokens |
+| Style profile injected as context | every session start, and after `/compact` | short profile |
+| Skills (`init`, `setup`, `sync`, `code`, `rewrite`, `write`) | when you or the agent invoke them | listing on startup, body on invoke |
+| Hooks on `Edit`/`Write`, `Bash`, MCP calls, `Stop` | every matching tool call | no model call; brief feedback on a finding |
 
-The four skills are Agent Skills in the portable format that Claude Code,
+The skills are Agent Skills in the portable format that Claude Code,
 Codex and Cursor all read, so one directory serves three hosts.
 
 Hard rules (H1-H4) deny the tool call with a one-line reason and the agent
 rewrites. Soft rules (S1-S7) warn by default; `strict: block` makes them deny
-too, `strict: off` silences them. Nothing denies forever: after two denials of
-the same rule on the same target in one session, that rule drops to a warning.
+too, `strict: off` silences them. A soft rule blocked twice on the same target
+falls back to a warning; hard rules keep denying. `attribution` can make H1
+warn or allow where a repository requires disclosure.
 
 ## Without and with unwordy
 
@@ -200,40 +201,16 @@ a row.
 
 **Session start** (the voice)
 
-Every session opens with the resolved profile, about 260 tokens. With the
-default `senior` preset and no profile file anywhere, that is:
+Every session receives the resolved profile. The `senior` default is brief and
+direct; `/unwordy:init` can replace it with rules drawn from examples you
+select. Repo instructions take precedence. The `code` skill asks the agent to
+read nearby implementation, tests and type configuration before editing.
 
-```text
-Writing style the user set with unwordy (preset senior, built-in default):
+**Repeated denials**
 
-Write like a developer on this team, not an assistant. Short beats complete.
-Code comments only where the code cannot say why: a constraint, an invariant,
-a trap, an external contract. One line, timeless, no references to tasks,
-tickets, sessions or what you just changed. Never restate the code. If the
-repo defines comment or commit conventions (CLAUDE.md, AGENTS.md,
-CONTRIBUTING, commitlint), those win over this style.
-Commits: imperative subject, body only when the why is not obvious.
-No attribution trailers, no emoji, no em dashes, no bold-label bullets, no
-headers in anything under a screen, no "summary of changes".
-Replies: answer first, one idea per sentence, plain words.
-In trackers and review threads, write in the thread's language and register.
-
-Dry, direct, why not what. Commit body when the reason matters.
-PR body: what, why, risk, how tested, up to twelve lines, no headers. Point
-at file and line instead of describing code.
-```
-
-The last three lines are the preset's voice; a body in your own profile
-replaces them.
-
-**When a rule has denied twice** (the loop guard)
-
-Nothing denies forever. After two denials of the same rule on the same target
-in one session, the third answer is a warning and the call goes through:
-
-```text
-unwordy H2c: code comment describes the edit, not the code (Updated for PROJ-142). Say why the code is this way, or delete it. Passed as a warning after two denials.
-```
+After two denials of the same soft rule on the same target, the third attempt
+gets a warning so a model cannot loop forever. Hard rules keep denying until
+the text changes or the repository explicitly disables the rule.
 
 ## Rules
 
@@ -275,6 +252,8 @@ strict: warn              # warn | block | off   (soft rules only)
 language: auto            # auto | en | pl | ...
 banned_words: delve, leverage, seamless, robust, comprehensive
 allow_ticket_refs: false
+attribution: block      # block | warn | allow
+commit.attribution: block
 max_subject: 72
 max_pr_body_lines: 12
 max_bullets: 6
@@ -291,6 +270,10 @@ replaces the built-in list rather than extending it. The three limits take a
 surface prefix for one surface only: `pr.max_body_lines: 20`,
 `commit.max_subject: 60`, `comment.max_bullets: 10`; the flat key stays the
 default for the others.
+`attribution` applies to H1; `commit.attribution`, `pr.attribution`,
+`comment.attribution`, `code.attribution` and `docs.attribution` can override
+it. Use `warn` or `allow` if your project requires AI disclosure. This
+controls text checks, not Git's cryptographic commit signing.
 
 When the repository already governs commit messages, with `commitlint.config.*`,
 `.commitlintrc*`, a `commitlint` key in `package.json`, a `commit.template` in
@@ -299,8 +282,8 @@ opener check (S6c) skip commits and leave the format to those rules.
 
 Presets: `lazy` (fewest words that still work), `senior` (dry, why not what,
 the default), `qa` (steps, expected, actual, environment), `lead` (brief and
-warm), `formal` (complete sentences, audit friendly), `custom` (learned from
-your own writing by `/unwordy:setup`).
+warm), `formal` (complete sentences, audit friendly), `custom` (built from
+answers and selected examples by `/unwordy:init`).
 
 ## Turning it down or off
 
@@ -311,6 +294,7 @@ your own writing by `/unwordy:setup`).
 | Make everything deny | `strict: block` |
 | Skip paths | `ignore: vendor/**, docs/**` |
 | Keep ticket ids in comments | `allow_ticket_refs: true` |
+| Require AI disclosure in commits | `commit.attribution: allow` |
 | Off in this repo | `enabled: false` in `.unwordy.md`, or `/unwordy:setup off` |
 | Off for one command | `UNWORDY_OFF=1 <command>` |
 | Off everywhere | `/plugin uninstall unwordy` |
@@ -340,6 +324,32 @@ actual, ticket ids allowed) and `team-enterprise` (formal, English, audit
 friendly). `/unwordy:setup --project team-strict` copies one into
 `.unwordy.md`.
 
+## Check before review
+
+The local checker covers routes a host hook cannot see. Run it from a checkout
+of unwordy, or use the absolute path to its `bin/unwordy` script:
+
+```sh
+sh /path/to/unwordy/bin/unwordy check --staged
+sh /path/to/unwordy/bin/unwordy check --message-file .git/COMMIT_EDITMSG --surface commit
+sh /path/to/unwordy/bin/unwordy check --diff origin/main --commits origin/main
+sh /path/to/unwordy/bin/unwordy doctor
+```
+
+`--staged` checks the index; `--diff BASE` checks tracked worktree changes;
+`--commits BASE` checks commit messages and authors in `BASE..HEAD`. The
+checker exits 1 for a block, 0 for warnings or clean text, and 2 on an error.
+Use `--fail-on-warn` for a stricter CI gate and `--json` for tooling. A Git
+`commit-msg` hook can call the second command with its first argument in
+place of `.git/COMMIT_EDITMSG`; a pre-commit hook can call `--staged`. Install
+those hooks only in repositories whose owners want them.
+
+`sh /path/to/unwordy/bin/unwordy conventions --path src/file.py` lists
+nearby instructions and configuration. `examples` lists your recent commit
+subjects and IDs; `examples --show ID...` reveals only the commits you pick
+for `/unwordy:init`. Pasted text and file paths also work for PRs, review
+comments and messages. Raw samples stay out of the generated profile.
+
 ## Codex
 
 The same repository is a Codex plugin:
@@ -350,24 +360,16 @@ codex plugin add unwordy@unwordy
 ```
 
 Codex installs the plugin under `~/.codex/plugins/cache/unwordy/` and lists
-the skills as `unwordy:rewrite` and `unwordy:write`. `unwordy:setup` and
-`unwordy:sync` are kept out of the model's list (`allow_implicit_invocation:
-false`), so only you invoke them, as in Claude Code. That much is verified
-against a live Codex 0.155 session.
+`unwordy:code`, `unwordy:rewrite` and `unwordy:write` for model invocation.
+`init`, `setup` and `sync` are reserved for explicit invocation through their
+`allow_implicit_invocation: false` policy. The older `rewrite` and `write`
+listings were verified on Codex 0.155; the new skills need a live check.
 
-**The hooks need two things turned on in Codex, and one of them is off by
-default.** Codex loads lifecycle hooks only when `features.hooks` is true,
-and it skips a plugin's hooks until you trust them once in the TUI:
-
-```toml
-# ~/.codex/config.toml
-[features]
-hooks = true
-```
-
-Then `/hooks` in the Codex TUI, once, to review and trust them. Until both
-are done the plugin still installs, still lists its skills and still reports
-its hooks, and no rule fires.
+Current Codex documentation says lifecycle hooks are enabled by default. It
+skips plugin hooks until you review and trust their current definition in
+`/hooks` in the TUI. Check `codex features list` if hooks do not run; a user
+or managed configuration can disable them. Installing the plugin alone does
+not enforce any rule.
 
 The hook contract is written to match Claude Code's: `Bash` and `apply_patch`
 (matched as `Edit|Write`) on `PreToolUse`, MCP tools, `SessionStart` with the
@@ -375,9 +377,9 @@ same sources, `Stop` with `stop_hook_active` and `last_assistant_message`, the
 same deny JSON, and `CLAUDE_PLUGIN_ROOT` set for plugin hooks, which Codex
 still sets next to its own `PLUGIN_ROOT`.
 
-Not verified, and honest about it: no unwordy hook has yet been observed
-firing inside Codex. Four `codex exec` runs with `--enable hooks
---dangerously-bypass-hook-trust` produced no hook invocation at all, with the
+Not verified: no unwordy hook has yet been observed firing inside Codex. Four
+`codex exec` runs, including runs with `--enable hooks` and
+`--dangerously-bypass-hook-trust`, produced no hook invocation, with the
 payload logged from the installed copy; the `apply_patch` in that test wrote
 the restating comment straight through. The trust step is interactive, so the
 remaining path to check is a TUI session after `/hooks`. `CONTRIBUTING.md` has
@@ -396,23 +398,21 @@ into `~/.codex/AGENTS.md` and offers to install the hook entries into
 
 The same repository is a Cursor plugin (`.cursor-plugin/plugin.json`). Until
 it is on the Cursor marketplace, copy it into `~/.cursor/plugins/local/unwordy`
-and reload the window; Customize then lists the four skills and two hooks. A
-`sessionStart` hook injects the voice as session context and
-`beforeShellExecution` runs the commit, PR and shell-write lints, answering in
-Cursor's own `permission` shape. File edits are not intercepted in Cursor:
-its edit tools do not pass through a hook that can deny before the write.
+and reload the window. It declares `sessionStart`, `beforeShellExecution`,
+`preToolUse` for Write, and `beforeMCPExecution`. The adapters return Cursor's
+`permission` shape. These paths pass fixture tests; a live Cursor session has
+not yet confirmed that the host invokes them with the expected payload.
 
 Two other routes exist. `/unwordy:sync` from Claude Code writes
-`.cursor/rules/unwordy.mdc` with `alwaysApply: true` and offers the same two
+`.cursor/rules/unwordy.mdc` with `alwaysApply: true` and offers the same hooks
 hook entries for `~/.cursor/hooks.json`. And Cursor imports Claude Code hooks
 from `.claude/settings.json` when third-party imports are on, but it matches
 them against its own tool names (`Shell`, not `Bash`), so entries have to be
 written for Cursor anyway. The plugin folder is the simplest of the three:
 one copy, nothing to edit.
 
-Unverified, because Cursor ships without a CLI here: whether
-`${CURSOR_PLUGIN_ROOT}` expands inside a plugin hook command and whether an
-empty hook response passes. `CONTRIBUTING.md` has the click-through checklist.
+`CONTRIBUTING.md` has the live smoke-test checklist. The local `check` command
+works independently of Cursor's hook loading.
 
 ## What it does not do
 
@@ -421,6 +421,8 @@ empty hook response passes. `CONTRIBUTING.md` has the click-through checklist.
   `echo` or `printf`, also through `>>` or a pipe, is linted like an edit.
   `sed -i` and other in-place editors are not followed.
 - Hooks never rewrite text. They deny or warn; the agent rewrites.
+- Regexes cannot establish that code or documentation is factually correct.
+- The checker only sees tracked diffs or staged changes, not untracked files.
 - No AI-detection score. The rules are regular expressions with ids you can read.
 - Prose outside the developer workflow is not the target; use a humanizer for that.
 - Windows is supported only through WSL.

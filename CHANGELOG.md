@@ -1,12 +1,25 @@
 # Changelog
 
+## v0.3.0
+
+- Add a local checker for staged changes, worktree diffs, commit messages and
+  committed author metadata. It works without a host hook and returns stable
+  JSON for other tools.
+- Add `/unwordy:init` for profiles built from selected writing examples, a
+  `code` skill for local conventions, and CLI commands for diagnostics,
+  convention discovery and opt-in commit samples.
+- Check short MCP messages for attribution, allow per-surface attribution
+  policy, and keep hard rules blocking after repeated attempts.
+- Add Cursor adapters for `preToolUse` Write and `beforeMCPExecution`.
+- Correct the Codex hook default in the README. Current Codex enables hooks
+  by default, but plugin hooks still require trust; live enforcement remains
+  unverified.
+
 ## v0.2.2
 
-- Codex loads no lifecycle hook at all until `features.hooks` is true in
-  `~/.codex/config.toml`, and it skips a plugin's hooks until `/hooks` trusts
-  them once. The README claimed only the second. Both are now in the Codex
-  section, next to what four live `codex exec` runs actually did: no hook
-  fired in any of them, including with `--dangerously-bypass-hook-trust`.
+- Document what four live `codex exec` runs actually did: no hook fired in
+  any of them, including with `--dangerously-bypass-hook-trust`. Plugin hooks
+  require trust through `/hooks` in the TUI.
 - The README opens with the problem rather than the feature list, and the
   Codex section no longer promises behaviour nobody has observed.
 

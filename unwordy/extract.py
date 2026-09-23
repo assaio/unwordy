@@ -479,6 +479,11 @@ def shell_messages(command, cwd):
     for segment in _parse(command):
         message = _message(_command(segment.args), cwd, segment.stdin)
         if message:
+            if message.surface == "commit":
+                for arg in segment.args:
+                    if arg.startswith(("GIT_AUTHOR_NAME=", "GIT_COMMITTER_NAME=")):
+                        kind = "author" if arg.startswith("GIT_AUTHOR_NAME=") else "committer"
+                        message.meta += f"\n{kind}=" + arg.partition("=")[2]
             messages.append(message)
     return messages
 
@@ -613,7 +618,7 @@ def _options(args, long_opts, short_opts):
 
 
 _GIT_GLOBAL_VALUES = {"-C", "-c", "--git-dir", "--work-tree", "--namespace", "--exec-path"}
-_COMMIT_LONG = {"--message": "message", "--file": "file", "--trailer": "meta", "--author": "meta",
+_COMMIT_LONG = {"--message": "message", "--file": "file", "--trailer": "meta", "--author": "author",
                 "--reuse-message": None, "--reedit-message": None, "--template": None,
                 "--date": None, "--cleanup": None, "--fixup": None, "--squash": None,
                 "--pathspec-from-file": None}
@@ -673,6 +678,8 @@ def _git(args, cwd, stdin):
     else:
         text = ""
     meta = "\n".join(opts.get("meta", []))
+    if opts.get("author"):
+        meta += "\nauthor=" + opts["author"][-1]
     if not text.strip() and not meta:
         return None
     subject, _, body = text.strip("\n").partition("\n")
@@ -705,8 +712,8 @@ def _read_arg(value, cwd, stdin):
     return text or ""
 
 
-def mcp_fields(tool_input, min_length=40):
-    """(key, text) pairs for long string fields named like body, comment, description."""
+def mcp_fields(tool_input, min_length=0):
+    """(key, text) pairs for text fields named like body, comment, description."""
     if isinstance(tool_input, str):
         try:
             tool_input = json.loads(tool_input)
@@ -714,15 +721,17 @@ def mcp_fields(tool_input, min_length=40):
             return []
     found = []
 
-    def walk(value, key):
+    def walk(value, key, depth=0):
+        if depth > 20 or len(found) >= 100:
+            return
         if isinstance(value, dict):
             for child_key, child in value.items():
-                walk(child, str(child_key))
+                walk(child, str(child_key), depth + 1)
         elif isinstance(value, list):
             for child in value:
-                walk(child, key)
+                walk(child, key, depth + 1)
         elif isinstance(value, str) and len(value.strip()) > min_length and key_words(key) & TEXT_KEYS:
-            found.append((key, value))
+            found.append((key, value[:MAX_BYTES]))
 
     walk(tool_input, "")
     return found

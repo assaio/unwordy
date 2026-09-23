@@ -258,7 +258,7 @@ def test_shell_subshell_does_not_swallow_next_command(project):
     assert surfaces == ["commit", "pr"]
 
 
-def test_mcp_fields_by_name_and_length():
+def test_mcp_fields_by_name_even_when_short():
     fields = extract.mcp_fields({
         "issueKey": "PROJ-1",
         "commentBody": "x" * 50,
@@ -266,6 +266,7 @@ def test_mcp_fields_by_name_and_length():
         "title": "short",
     })
     assert [key for key, _ in fields] == ["commentBody"]
+    assert extract.mcp_fields({"body": "Generated with Claude"}) == [("body", "Generated with Claude")]
 
 
 def test_mcp_fields_walk_nested_documents():

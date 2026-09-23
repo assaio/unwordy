@@ -1,8 +1,8 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "unwordy",
-  "version": "0.2.2",
-  "description": "Makes coding agents write like a terse developer in code comments, commits, PRs, tracker comments and replies. Hooks block AI attribution and filler before it reaches the repo.",
+  "version": "0.3.0",
+  "description": "Keeps coding-agent comments, commits, PRs and replies concise. Local checks and optional hooks catch attribution and filler before review.",
   "author": {
     "name": "assaio",
     "url": "https://github.com/assaio"
@@ -23,7 +23,7 @@
       "interface": {
         "displayName": "unwordy",
         "shortDescription": "Write like a terse developer, not an assistant",
-        "longDescription": "Loads a short style profile at session start, adds skills for commit messages, PR bodies and tracker comments, and blocks AI attribution trailers and restating comments with deterministic hooks.",
+        "longDescription": "Loads a short writing profile, teaches repo conventions and checks diffs, commit messages and review text with local rules. Host hooks can stop matching writes before review.",
         "developerName": "assaio",
         "category": "Developer Tools",
         "capabilities": ["Read", "Write"],

@@ -1,4 +1,4 @@
-"""Loop guard: after two denials for the same rule and target, the rule only warns."""
+"""Loop guard for soft rules blocked under strict mode."""
 
 import json
 import os

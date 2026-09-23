@@ -12,6 +12,19 @@
         "command": "sh \"${CURSOR_PLUGIN_ROOT}/hooks/run.sh\" pre-bash",
         "timeout": 10
       }
+    ],
+    "preToolUse": [
+      {
+        "command": "sh \"${CURSOR_PLUGIN_ROOT}/hooks/run.sh\" pre-edit",
+        "matcher": "Write",
+        "timeout": 10
+      }
+    ],
+    "beforeMCPExecution": [
+      {
+        "command": "sh \"${CURSOR_PLUGIN_ROOT}/hooks/run.sh\" pre-mcp",
+        "timeout": 10
+      }
     ]
   }
 }

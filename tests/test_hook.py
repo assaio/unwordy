@@ -95,7 +95,15 @@ def test_pre_bash_denies_an_attribution_trailer(project):
     assert reason.startswith("unwordy H1: ") and "commit again" in reason
 
 
-def test_loop_guard_downgrades_after_two_denials(project):
+def test_pre_bash_denies_agent_author(project):
+    for command in ('git commit --author="Claude <claude@example.com>" -m "Fix retry"',
+                    'GIT_AUTHOR_NAME=Claude git commit -m "Fix retry"'):
+        out = hook.run("pre-bash", payload(cwd=str(project), tool_name="Bash",
+                                           tool_input={"command": command}))
+        assert decision(out)["permissionDecision"] == "deny"
+
+
+def test_hard_rule_does_not_downgrade_after_two_denials(project):
     command = 'git commit -m "x" -m "Co-Authored-By: Claude <noreply@anthropic.com>"'
     call = payload(cwd=str(project), tool_name="Bash", tool_input={"command": command})
     first = hook.run("pre-bash", call)
@@ -103,8 +111,32 @@ def test_loop_guard_downgrades_after_two_denials(project):
     third = hook.run("pre-bash", call)
     assert decision(first)["permissionDecision"] == "deny"
     assert decision(second)["permissionDecision"] == "deny"
-    assert "permissionDecision" not in decision(third)
-    assert "Passed as a warning after two denials." in decision(third)["additionalContext"]
+    assert decision(third)["permissionDecision"] == "deny"
+
+
+def test_soft_rule_downgrades_after_two_denials(project):
+    (project / ".unwordy.md").write_text("---\nstrict: block\n---\n")
+    call = payload(cwd=str(project), tool_name="Bash",
+                   tool_input={"command": 'git commit -m "A comprehensive retry change"'})
+    assert decision(hook.run("pre-bash", call))["permissionDecision"] == "deny"
+    assert decision(hook.run("pre-bash", call))["permissionDecision"] == "deny"
+    third = decision(hook.run("pre-bash", call))
+    assert "permissionDecision" not in third
+    assert "Passed as a warning after two denials." in third["additionalContext"]
+
+
+def test_attribution_can_warn_or_allow_per_surface(project):
+    (project / ".unwordy.md").write_text(
+        "---\nattribution: warn\ncommit.attribution: allow\n---\n"
+    )
+    commit_call = payload(cwd=str(project), tool_name="Bash", tool_input={
+        "command": 'git commit -m "fix" -m "Co-Authored-By: Claude"'
+    })
+    assert hook.run("pre-bash", commit_call) is None
+    mcp_call = payload(cwd=str(project), tool_name="mcp__github__comment",
+                       tool_input={"body": "Generated with Claude"})
+    warning = decision(hook.run("pre-mcp", mcp_call))["additionalContext"]
+    assert warning.startswith("unwordy H1:")
 
 
 def test_loop_guard_is_per_session(project):
@@ -241,8 +273,8 @@ def test_loop_guard_counts_the_family(project):
     calls = [edit(project, "a.py", "# see PROJ-142\nx = 1\n"), edit(project, "a.py", "# see PROJ-143\nx = 1\n"),
              edit(project, "a.py", "# Step 1: go\nx = 1\n")]
     results = [hook.run("pre-edit", call) for call in calls]
-    assert [decision(r).get("permissionDecision") for r in results] == ["deny", "deny", None]
-    assert decision(results[2])["additionalContext"].startswith("unwordy H2b: ")
+    assert [decision(r).get("permissionDecision") for r in results] == ["deny", "deny", "deny"]
+    assert decision(results[2])["permissionDecisionReason"].startswith("unwordy H2b: ")
 
 
 def test_cursor_session_start_answers_in_its_own_shape(project):
@@ -258,6 +290,22 @@ def test_cursor_pre_tool_use_shell_payload_is_denied(project):
                                 "tool_input": {"command": command, "working_directory": str(project)},
                                 "cwd": str(project)})
     assert out["permission"] == "deny" and out["agent_message"].startswith("unwordy H1: ")
+
+
+def test_cursor_pre_tool_use_write_payload_is_denied(project):
+    out = hook.run("pre-edit", {"hook_event_name": "preToolUse", "tool_name": "Write",
+                                 "tool_input": {"file_path": str(project / "a.ts"),
+                                                "content": "// This function returns the user\n"},
+                                 "cwd": str(project)})
+    assert out["permission"] == "deny"
+    assert "H4a" in out["agent_message"]
+
+
+def test_cursor_before_mcp_execution_checks_short_attribution(project):
+    out = hook.run("pre-mcp", {"hook_event_name": "beforeMCPExecution",
+                                "tool_name": "create_comment", "tool_input": '{"body":"Generated with Claude"}',
+                                "cwd": str(project)})
+    assert out["permission"] == "deny"
 
 
 def test_commitlint_repo_keeps_hard_rules_but_not_subject_length(project):

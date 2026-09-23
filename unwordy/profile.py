@@ -40,6 +40,7 @@ DEFAULTS = {
     "language": "auto",
     "banned_words": list(BANNED_EN + BANNED_PL + BANNED_DE),
     "allow_ticket_refs": False,
+    "attribution": "block",
     "max_subject": 72,
     "max_pr_body_lines": 12,
     "max_bullets": 6,
@@ -68,6 +69,10 @@ class Profile:
     def voice(self):
         """Core rules plus the preset or custom body, as injected at session start."""
         parts = [core_rules(), self.body]
+        attribution = [f"{key} {value}" for key, value in self.settings.items()
+                       if (key == "attribution" or key.endswith(".attribution")) and value != "block"]
+        if attribution:
+            parts.append("Attribution policy: " + "; ".join(attribution) + ".")
         language = str(self.settings.get("language") or "auto").strip()
         if language.lower() != "auto":
             parts.append(f"Default language for replies and tracker text: {language}.")
@@ -163,6 +168,10 @@ def resolve(cwd=None, env=None):
     if settings["strict"] not in _STRICT:
         settings["strict"] = DEFAULTS["strict"]
     settings["disable"] = [rule_id(rule) for rule in settings["disable"]]
+    for key, value in list(settings.items()):
+        if key == "attribution" or key.endswith(".attribution"):
+            if value not in ("block", "warn", "allow"):
+                settings[key] = "block"
     return Profile(settings, body or preset_body(settings["preset"]), path)
 
 
@@ -182,7 +191,7 @@ def commit_conventions(cwd, env=None):
     env = os.environ if env is None else env
     home = Path(env.get("HOME") or os.path.expanduser("~"))
     root = _git_root(cwd)
-    for directory in {root, home}:
+    for directory in {root, home} - {None}:
         try:
             names = os.listdir(directory)
         except OSError:

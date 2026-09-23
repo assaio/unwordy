@@ -21,7 +21,7 @@ Load the `unwordy:write` skill for the target surface, then:
 
 1. Keep facts, numbers, paths, error strings, links and code blocks exactly.
 2. Cut preamble, restatement of the question, closing offers, "as requested",
-   attribution trailers and session links.
+   unsolicited attribution trailers and session links. Keep required disclosure.
 3. Replace marketing words (`delve`, `leverage`, `seamless`, `robust`,
    `comprehensive`, `streamline`, `utilize`) with plain ones.
 4. Replace em dashes with a comma, a colon or a full stop.

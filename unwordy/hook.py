@@ -56,6 +56,10 @@ def normalize(payload):
                     host="cursor")
     if event == "sessionStart":
         return dict(payload, hook_event_name="SessionStart", host="cursor")
+    if event == "beforeMCPExecution":
+        return dict(payload, host="cursor")
+    if event == "preToolUse" and payload.get("tool_name") == "Write":
+        return dict(payload, host="cursor")
     if payload.get("tool_name") == "Shell":
         tool_input = payload.get("tool_input") if isinstance(payload.get("tool_input"), dict) else {}
         return dict(payload, tool_name="Bash", tool_input={"command": tool_input.get("command") or ""},
@@ -136,17 +140,16 @@ def _decide(findings, prof, payload):
     settings = prof.settings
     deny, warn = [], []
     for finding in findings:
-        if finding.disabled(settings):
-            continue
-        if finding.hard or settings["strict"] == "block":
-            deny.append(finding)
-        elif settings["strict"] == "warn":
+        effect = lint.action(finding, settings)
+        if effect == "warn":
             warn.append(finding)
+        elif effect == "block":
+            deny.append(finding)
     blocked = []
     if deny:
         guard = state.Guard(payload.get("session_id") or payload.get("conversation_id"))
         for finding in deny:
-            if guard.exhausted(finding.family, finding.target):
+            if not finding.hard and guard.exhausted(finding.family, finding.target):
                 finding.reason += " Passed as a warning after two denials."
                 warn.append(finding)
             else:

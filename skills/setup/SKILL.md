@@ -47,6 +47,7 @@ For `custom`, ask one at a time:
 6. Warmth: none / a bit / friendly.
 7. Language: en / pl / follow the thread.
 8. Optional: three to ten samples of their own writing, pasted or as paths.
+9. AI attribution policy: block, warn or allow, globally or for commits only.
 
 From the samples take median sentence length, casing, punctuation habits,
 greeting and sign-off, bullet and emoji use, three phrasings they use, three
@@ -68,7 +69,8 @@ Two to five lines describing the voice. Leave the body out for a preset.
 ```
 
 Other keys: `banned_words`, `allow_ticket_refs`, `max_subject`,
-`max_pr_body_lines`, `max_bullets`, `ignore`, `disable`, `enabled`.
+`max_pr_body_lines`, `max_bullets`, `ignore`, `disable`, `enabled`,
+`attribution` and `<surface>.attribution`.
 `strict` is `warn`, `block` or `off` and applies to the soft rules only.
 
 ## Preview, confirm, write

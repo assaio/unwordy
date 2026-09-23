@@ -16,6 +16,7 @@ class Finding:
     rule: str
     reason: str
     target: str = ""
+    surface: str = ""
 
     @property
     def hard(self):
@@ -33,6 +34,18 @@ class Finding:
         return f"unwordy {self.rule}: {self.reason}"
 
 
+def action(finding, settings):
+    """Return block, warn or ignore for a finding under one profile."""
+    if finding.disabled(settings):
+        return "ignore"
+    if finding.rule == "H1":
+        value = settings.get(f"{finding.surface}.attribution", settings["attribution"])
+        return {"allow": "ignore", "warn": "warn", "block": "block"}.get(value, "block")
+    if finding.hard or settings["strict"] == "block":
+        return "block"
+    return "warn" if settings["strict"] == "warn" else "ignore"
+
+
 BUILTIN_IGNORES = (
     "tests/fixtures/**", "**/*.snap", "*.lock", "*.lockb", "*-lock.json", "*-lock.yaml",
     "*.lockfile", "go.sum", "npm-shrinkwrap.json", "Package.resolved", "packages.lock.json",
@@ -42,6 +55,7 @@ _H1 = re.compile(
     r"co-authored-by:[^\n]*?\b(?:claude|codex|cursor|chatgpt|copilot|gemini)\b"
     r"|generated (?:with|by) \[?(?:claude|codex|cursor|ai)\b(?![.(_-])"
     r"|made-with: *cursor\b"
+    r"|(?:^|\n)(?:author|committer)=(?:claude(?: code)?|codex(?: cli)?|cursor(?: agent)?|chatgpt|copilot|gemini)(?:\s*<|$)"
     r"|claude-session:"
     r"|\U0001F916"
     r"|noreply@anthropic\.com|cursoragent@cursor\.com|noreply@openai\.com",
@@ -149,7 +163,7 @@ def lint_message(message, settings, conventions=False):
     """
     where = _WHERE.get(message.surface, "the message")
     prose = "\n".join(_prose_lines("\n".join(p for p in (message.title, message.body) if p)))
-    findings = _attribution(prose + "\n" + message.meta, where, message.surface == "commit")
+    findings = _attribution(prose + "\n" + message.meta, where, message.surface == "commit", message.surface)
     findings += _dashes(prose, where) + _banned(prose, where, settings)
     findings += _structure(message.title, message.body, message.surface, where, settings)
     if message.surface in ("commit", "pr"):
@@ -162,7 +176,10 @@ def lint_message(message, settings, conventions=False):
 def lint_field(key, text, settings):
     """A long text field of an MCP tool call, such as a Jira or GitHub comment body."""
     prose = "\n".join(_prose_lines(text))
-    findings = _attribution(prose, "the comment", False) + _dashes(prose, "the comment")
+    findings = _attribution(prose, "the comment", False, "comment")
+    if len(text.strip()) <= 40:
+        return findings
+    findings += _dashes(prose, "the comment")
     findings += _banned(prose, "the comment", settings)
     if extract.key_words(key) & _STRUCTURED_KEYS:
         findings += _structure("", text, "comment", "the comment", settings)
@@ -258,7 +275,7 @@ def _lint_prose_file(change, settings):
     for index, text in _prose_indexed(change.lines):
         if index not in change.added:
             continue
-        for finding in _attribution(text, where, False) + _dashes(text, where) + _banned(text, where, settings):
+        for finding in _attribution(text, where, False, "docs") + _dashes(text, where) + _banned(text, where, settings):
             hits.setdefault(finding.rule, []).append(finding)
         stripped = _LIST_MARKER.sub("", text).strip()
         if _H3.match(stripped):
@@ -285,7 +302,7 @@ def _lint_code(change, syntax, settings):
         text = line.comment
         if line.kind not in ("comment", "mixed") or not text:
             continue
-        for finding in _attribution(text, "a code comment", False):
+        for finding in _attribution(text, "a code comment", False, "code"):
             hits.setdefault("H1", []).append(finding)
         _task_references(text, settings, hit)
         if _H3.match(text):
@@ -446,12 +463,12 @@ def _brace_docstrings(lines, info, added):
             yield (name.group(1) if name else "function"), doc, inner
 
 
-def _attribution(text, where, commit):
+def _attribution(text, where, commit, surface=""):
     match = _H1.search(text)
     if not match:
         return []
     again = "Remove it and commit again." if commit else "Remove it and try again."
-    return [Finding("H1", f"attribution in {where} ({_snippet(match.group(0))}). {again}")]
+    return [Finding("H1", f"attribution in {where} ({_snippet(match.group(0))}). {again}", surface=surface)]
 
 
 def _dashes(text, where):

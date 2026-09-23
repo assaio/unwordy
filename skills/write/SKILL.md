@@ -14,7 +14,9 @@ CONTRIBUTING, commitlint, the last twenty commits) win over everything here.
 - Body only when the why is not obvious from the diff: the constraint, the
   bug, the trade-off, the thing the next reader would get wrong.
 - Never list the files you touched. The diff lists them.
-- No attribution trailers, no session links, no emoji.
+- Commit only when asked or required by the repo workflow; group coherent work.
+- Keep the user's Git author and committer identity. Follow the profile's
+  attribution policy; no unsolicited agent trailer or session link.
 
 ## PR title and body
 
