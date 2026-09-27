@@ -9,4 +9,4 @@ ignore: vendor/**, **/*.generated.*, **/*.pb.go
 ---
 Dry and direct, why not what. Commit subject: <area>: <imperative>, under 60
 characters, body only when the reason is not in the diff. PR body: what, why,
-risk, how tested, no headers. Point at file and line instead of describing code.
+risk, how tested, use the required repository template. Point at file and line instead of describing code.

@@ -1,3 +1,2 @@
-Dry, direct, why not what. Commit body when the reason matters.
-PR body: what, why, risk, how tested, up to twelve lines, no headers. Point
-at file and line instead of describing code.
+Direct and specific. Explain the reason when it is not apparent from the diff.
+Keep risks and test evidence. Use the profile's limits and the repository's template.

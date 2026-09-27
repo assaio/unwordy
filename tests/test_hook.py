@@ -58,6 +58,7 @@ def test_unknown_mode_and_empty_payload():
 
 
 def test_pre_edit_denies_a_restating_comment(project):
+    (project / ".unwordy.md").write_text("---\nrule.H4: block\n---\n")
     out = hook.run("pre-edit", edit(project, "user.ts",
                                     "// This function returns the user\nexport function u() {}\n"))
     assert decision(out)["permissionDecision"] == "deny"
@@ -201,13 +202,14 @@ def test_cursor_shell_payload_is_normalised_and_denied(project):
     assert out["agent_message"].startswith("unwordy H1: ")
 
 
-def test_cursor_gets_no_output_for_soft_findings(project):
+def test_cursor_explicitly_allows_soft_findings(project):
     out = hook.run("pre-bash", {"hook_event_name": "beforeShellExecution", "cwd": str(project),
                                 "command": 'git commit -m "leverage the new schema"'})
-    assert out is None
+    assert out == {"permission": "allow"}
 
 
 def test_codex_apply_patch_is_linted(project):
+    (project / ".unwordy.md").write_text("---\nrule.H4: block\n---\n")
     patch = "*** Begin Patch\n*** Add File: user.ts\n+// This function returns the user\n*** End Patch\n"
     out = hook.run("pre-edit", payload(cwd=str(project), tool_name="apply_patch",
                                        tool_input={"command": patch}))
@@ -236,6 +238,7 @@ def test_unlintable_files_are_not_diffed(project):
 
 
 def test_pre_bash_lints_a_file_written_through_the_shell(project):
+    (project / ".unwordy.md").write_text("---\nrule.H4: block\n---\n")
     command = "cat > user.ts <<'EOF'\n// This function returns the user\nexport function u() {}\nEOF"
     out = hook.run("pre-bash", payload(cwd=str(project), tool_name="Bash", tool_input={"command": command}))
     assert decision(out)["permissionDecision"] == "deny"
@@ -262,7 +265,7 @@ def test_disable_family_silences_every_sub_rule(project):
 
 
 def test_disable_sub_rule_keeps_its_siblings(project):
-    (project / ".unwordy.md").write_text("---\ndisable: h2b, S7b\n---\n")
+    (project / ".unwordy.md").write_text("---\ndisable: h2b, S7b\nstrict: block\n---\n")
     out = hook.run("pre-edit", edit(project, "a.py", "# see PROJ-142\n# Step 1: go\nx = 1\n"))
     reason = decision(out)["permissionDecisionReason"]
     assert decision(out)["permissionDecision"] == "deny"
@@ -270,11 +273,12 @@ def test_disable_sub_rule_keeps_its_siblings(project):
 
 
 def test_loop_guard_counts_the_family(project):
+    (project / ".unwordy.md").write_text("---\nstrict: block\n---\n")
     calls = [edit(project, "a.py", "# see PROJ-142\nx = 1\n"), edit(project, "a.py", "# see PROJ-143\nx = 1\n"),
              edit(project, "a.py", "# Step 1: go\nx = 1\n")]
     results = [hook.run("pre-edit", call) for call in calls]
-    assert [decision(r).get("permissionDecision") for r in results] == ["deny", "deny", "deny"]
-    assert decision(results[2])["permissionDecisionReason"].startswith("unwordy H2b: ")
+    assert [decision(r).get("permissionDecision") for r in results] == ["deny", "deny", None]
+    assert decision(results[2])["additionalContext"].startswith("unwordy H2b: ")
 
 
 def test_cursor_session_start_answers_in_its_own_shape(project):
@@ -293,6 +297,7 @@ def test_cursor_pre_tool_use_shell_payload_is_denied(project):
 
 
 def test_cursor_pre_tool_use_write_payload_is_denied(project):
+    (project / ".unwordy.md").write_text("---\nrule.H4: block\n---\n")
     out = hook.run("pre-edit", {"hook_event_name": "preToolUse", "tool_name": "Write",
                                  "tool_input": {"file_path": str(project / "a.ts"),
                                                 "content": "// This function returns the user\n"},

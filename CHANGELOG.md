@@ -1,5 +1,23 @@
 # Changelog
 
+## v0.4.0
+
+- Render voice from the active profile, with independent role and tone. Add QA,
+  design and personal examples in English and Polish.
+- Preserve required GitHub/GitLab PR headings and explicit template policies.
+- Make H2b, H2d and H4 heuristics warn by default; add per-rule effects and
+  contract/standard exceptions. Existing strict profiles can still block.
+- Check MCP titles and apply the correct PR, issue or comment policy. Skip reads
+  and unknown operations; extend literal gh api extraction.
+- Diagnose invalid profile configuration in doctor, voice, checker and hooks.
+- Add a standalone portable skill, local voice command, CI, a demo and a
+  36-case completeness corpus with blinded human review sheets.
+- Remove forced percentage shortening and fixed style bans from shared skills.
+- Document Cursor warning limits, host evidence and privacy separately.
+
+Migration: H2b/H2d/H4 now follow strict. Set rule.H4: block for the old effect.
+Invalid profiles return CLI exit 2 and pause hook checks until corrected.
+
 ## v0.3.0
 
 - Add a local checker for staged changes, worktree diffs, commit messages and

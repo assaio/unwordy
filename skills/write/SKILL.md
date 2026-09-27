@@ -1,60 +1,45 @@
 ---
 name: write
-description: Load before writing a commit message, PR title or body, issue, review or tracker comment, or a reply longer than three sentences.
+description: Follow the team's writing conventions in commits, PRs, reviews, bug reports, design handoffs and work replies. Preserve evidence and personal voice.
 user-invocable: false
 ---
 
-Rules for text that reaches a person. Repo conventions (CLAUDE.md, AGENTS.md,
-CONTRIBUTING, commitlint, the last twenty commits) win over everything here.
+Write for the person who will act on the message. Preserve facts, uncertainty,
+negations, commitments, exact errors and test evidence. Never invent details,
+experience or testing to make an answer sound natural.
 
-## Commits
+## Resolve the voice
 
-- Imperative subject under 72 characters, no trailing period. Use a type
-  prefix only where the repo already does.
-- Body only when the why is not obvious from the diff: the constraint, the
-  bug, the trade-off, the thing the next reader would get wrong.
-- Never list the files you touched. The diff lists them.
-- Commit only when asked or required by the repo workflow; group coherent work.
-- Keep the user's Git author and committer identity. Follow the profile's
-  attribution policy; no unsolicited agent trailer or session link.
+Repository requirements (AGENTS.md, CLAUDE.md, CONTRIBUTING, templates and
+commitlint) win. Then use the active profile supplied at session start. If it
+is missing, read `$UNWORDY_STYLE`, else the nearest `.unwordy.md` up to the git
+root, else `$XDG_CONFIG_HOME/unwordy/style.md` (default `~/.config/unwordy/style.md`).
+The first file wins. If the local unwordy CLI is available, `unwordy voice`
+prints the resolved instructions. Otherwise interpret the profile directly.
+With no profile, use a direct, specific voice and enough context for the task.
+A custom body supplies the voice; role and tone are independent preferences.
+Respect disabled rules and per-surface limits. Required content wins over brevity.
 
-## PR title and body
+## Surfaces
 
-- Title says the change, not the process.
-- Body: what changed, why, risk, how you tested. Up to twelve lines, no
-  headers, no `## Summary`, no `## Test plan`, unless the repo's template
-  already has them.
-- Point at `file:line` instead of describing code. Link the issue once.
-- No check-box theatre, no bold-label bullets, no emoji.
+- Commits: follow local subject conventions; add a body for a non-obvious reason.
+  Keep the user's Git identity and required disclosure. Commit only when requested
+  or required by the repository workflow.
+- PRs: retain what changed, why, risk and observed test evidence. Use the repository
+  template. Without one, choose paragraphs or bullets that help review.
+- Reviews: identify the change needed and its reason. Keep a useful acknowledgement
+  in a warm voice; remove praise that does not help the discussion.
+- Bugs and test results: retain reproduction, expected/actual, environment,
+  versions, frequency and exact errors. Numbered steps and descriptive terms help.
+- Design handoffs: retain states, behavior, rationale, accessibility and constraints.
+- Decisions: retain the decision, trade-off, owner and next step when supplied.
+- Code comments: explain constraints, contracts and traps. Public API documentation,
+  algorithm steps and workaround references may be necessary. Remove restatement.
+- Replies: answer first, then enough context. Preserve intentional warmth, casing
+  and punctuation from the profile. Length follows the reader's task.
 
-## Issues, reviews and tracker comments
+Read [references/examples.md](references/examples.md) for surface examples.
+Read [references/roles.md](references/roles.md) for QA, design or Polish examples.
 
-- Write in the thread's language and register. Answer the message you got.
-- Bug reports: steps, expected, actual, environment, and one exact error
-  message in a code block.
-- Decisions: decision, reason, next step. One paragraph beats five bullets.
-- Review comments: say what to change and why, in one or two sentences. Skip
-  the compliment sandwich.
-
-## Code comments and docstrings
-
-- Only where the code cannot say why: a constraint, an invariant, a trap, an
-  external contract.
-- One line, timeless. No tickets, no dates, no "changed X to Y", no "as
-  requested", no step numbers.
-- Never restate the line below. Delete a stale comment instead of updating it.
-- Docstrings: what it is for, in a sentence. Skip parameter lists that repeat
-  the signature.
-
-## Replies
-
-- Answer first, then the reason if it is not obvious.
-- One idea per sentence, plain words, no preamble, no closing offer.
-- Say in one clause where you are unsure or where you guessed.
-
-## Last pass
-
-Cut every sentence that does not change what the reader does. A sentence that
-survives only because it sounds thorough goes.
-
-Before and after for each surface: [references/examples.md](references/examples.md).
+Before sending, check that shortening did not lose a fact, qualification or
+required section. Do not change technical strings, quotes or links for style.

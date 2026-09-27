@@ -9,7 +9,7 @@
     {
       "name": "unwordy",
       "source": "./",
-      "description": "Makes coding agents write like a terse developer in code comments, commits, PRs, tracker comments and replies.",
+      "description": "Personal and team voice for coding-agent commits, PRs, reviews, QA reports and design handoffs, with local checks.",
       "category": "productivity"
     }
   ]

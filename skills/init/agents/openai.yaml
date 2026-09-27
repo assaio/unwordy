@@ -1,2 +1,6 @@
+interface:
+  display_name: "unwordy init"
+  short_description: "Build a personal or team voice"
+  default_prompt: "Use $init to build a writing profile from selected examples."
 policy:
   allow_implicit_invocation: false

@@ -2,7 +2,7 @@
 name: sync
 description: Render the unwordy voice into AGENTS.md, .cursor/rules/unwordy.mdc and ~/.codex/AGENTS.md and install the Codex and Cursor hook configs. Safe to run twice.
 disable-model-invocation: true
-allowed-tools: Read Write Edit Bash(ls *) Bash(test *)
+allowed-tools: Read Write Edit Bash(ls *) Bash(test *) Bash(sh *) Bash(codex plugin list)
 ---
 
 Put the current voice into the files other tools read. Running this twice
@@ -10,31 +10,30 @@ changes nothing.
 
 ## 1. Build the block
 
-Run `sh "${CLAUDE_PLUGIN_ROOT}/hooks/run.sh" render` and use its output
-verbatim as BLOCK. If you cannot run it, assemble BLOCK yourself:
+Use the local CLI's `voice` output when available. Otherwise resolve the first
+profile in this order: an existing `$UNWORDY_STYLE`, the nearest `.unwordy.md`
+up to the git root, `$XDG_CONFIG_HOME/unwordy/style.md` (default
+`~/.config/unwordy/style.md`). Honor enabled, disabled rules, limits, role,
+tone and disclosure. With no profile, use clear direct language and retain
+facts, uncertainty and evidence. Do not add fixed punctuation or length bans.
 
-- first line: `<!-- unwordy:start (managed by unwordy; edit .unwordy.md or ~/.config/unwordy/style.md instead) -->`
-- then `${CLAUDE_PLUGIN_ROOT}/unwordy/presets/core.md` verbatim
-- then a blank line, then the voice body: the body of the profile file when it
-  has one, otherwise `${CLAUDE_PLUGIN_ROOT}/unwordy/presets/<preset>.md`
-- last line: `<!-- unwordy:end -->`
-
-The profile is `.unwordy.md` from this directory up to the git root, else
-`~/.config/unwordy/style.md`, else the `senior` preset.
+Wrap the resolved voice in `<!-- unwordy:start (managed by unwordy; edit
+.unwordy.md or ~/.config/unwordy/style.md instead) -->` and
+`<!-- unwordy:end -->`. A disabled profile removes an existing managed block.
 
 ## 2. Write the project files
 
 - `AGENTS.md`: replace whatever sits between the two markers. With no markers,
   append a blank line and BLOCK. Create the file with BLOCK if it is missing.
 - `.cursor/rules/unwordy.mdc`: `---`, `description: unwordy writing style`,
-  `alwaysApply: true`, `---`, then BLOCK. Overwrite the whole file.
+  `alwaysApply: true`, `---`, then BLOCK. Replace only this managed file. Preserve unrelated rules in other files.
 
 Read each file first. If it already holds exactly that text, leave it alone
 and report it as unchanged.
 
 ## 3. Ask before the machine-wide files
 
-Check `test -d ~/.codex` and `test -d ~/.cursor`. List what you would write,
+Check for existing Codex and Cursor configuration directories. List what you would write,
 then ask once before writing anything under the home directory:
 
 - `~/.codex/AGENTS.md`: the same marker block.
@@ -47,6 +46,8 @@ then ask once before writing anything under the home directory:
   replaced by the real plugin path, merged into the matching arrays under
   `hooks`, keeping `"version": 1`.
 
+If this is a skills-only installation, sync the voice only; hook assets are
+not installed. Locate the plugin root before using hook templates.
 Skip the hook files for a tool that already loads unwordy as its own plugin,
 or the lints run twice. For Codex, `codex plugin list` shows
 `unwordy@unwordy installed, enabled` in that case.

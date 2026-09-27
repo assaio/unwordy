@@ -41,6 +41,7 @@ def test_session_start_prints_context(project):
 
 
 def test_edit_matcher_denies(project):
+    (project / ".unwordy.md").write_text("---\nrule.H4: block\n---\n")
     (project / "user.ts").write_text("export function u() {}\n")
     payload = base(project, tool_name="Edit", tool_input={
         "file_path": str(project / "user.ts"),
@@ -52,12 +53,14 @@ def test_edit_matcher_denies(project):
 
 
 def test_write_matcher_denies(project):
+    (project / ".unwordy.md").write_text("---\nrule.H4: block\n---\n")
     payload = base(project, tool_name="Write", tool_input={
         "file_path": str(project / "user.py"), "content": "# This function returns the user\n"})
     assert out_json(run("pre-edit", payload))["hookSpecificOutput"]["permissionDecision"] == "deny"
 
 
 def test_multiedit_matcher_denies(project):
+    (project / ".unwordy.md").write_text("---\nrule.H4: block\n---\n")
     (project / "a.py").write_text("x = 1\n")
     payload = base(project, tool_name="MultiEdit", tool_input={
         "file_path": str(project / "a.py"),
@@ -66,6 +69,7 @@ def test_multiedit_matcher_denies(project):
 
 
 def test_notebook_matcher_denies(project):
+    (project / ".unwordy.md").write_text("---\nrule.H4: block\n---\n")
     (project / "n.ipynb").write_text(json.dumps({"cells": []}))
     payload = base(project, tool_name="NotebookEdit", tool_input={
         "notebook_path": str(project / "n.ipynb"), "cell_id": "c1",

@@ -5,13 +5,13 @@ disable-model-invocation: true
 allowed-tools: Read Write Bash(git *) Bash(sh *) AskUserQuestion
 ---
 
-Set up a custom voice. Read `skills/setup/SKILL.md` from this plugin and follow
-its wizard, profile format and preview step. The user's examples are optional.
+Set up a custom voice. Use the setup skill when installed alongside this one. Otherwise ask for
+project or global scope, role, tone and language, and write a Markdown profile
+with flat frontmatter (`preset: custom`, `role`, `tone`, `language`, `strict`).
+Preview and get acceptance before writing. Repository requirements win. The user's examples are optional.
 
-Before reading history, ask whether to inspect local commits. If yes, run
-`sh "${CLAUDE_PLUGIN_ROOT}/bin/unwordy" examples --limit 10` to list only
-subjects and IDs. Ask which IDs to use, then run `examples --show ID...` for
-those IDs only. For PRs, review threads, tracker messages and email, ask for
+Before reading history, ask whether to inspect local commits. If authorized, list local subjects and IDs with `git log -10 --format="%h %s"`.
+Ask which IDs to use, then read only those messages with `git show -s --format=%B`. For PRs, review threads, tracker messages and email, ask for
 pasted examples or paths. Do not search accounts or mailboxes without the
 user choosing those sources. Do not store raw samples or put private names,
 addresses or links in the profile.

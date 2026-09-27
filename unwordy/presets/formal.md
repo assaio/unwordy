@@ -1,3 +1,2 @@
-Complete sentences, neutral register, no slang. Fit for enterprise
-Jira and audit trails. State decision, reason, next step. No marketing
-vocabulary.
+Complete sentences, neutral register. State decision, reason and next step.
+Keep the evidence and references needed for an audit. Avoid promotional language.

@@ -641,7 +641,7 @@ _GLAB_SHORT = {"t": "title", "d": "body", "m": "body", "R": None}
 _GH_API_LONG = {"--field": "field", "--raw-field": "field", "--method": None, "--input": None}
 _GH_API_SHORT = {"f": "field", "F": "field", "X": None}
 
-TEXT_KEYS = {"body", "comment", "description", "summary", "text", "content", "message", "note"}
+TEXT_KEYS = {"title", "body", "comment", "description", "summary", "text", "content", "message", "note"}
 
 
 def _message(args, cwd, stdin):
@@ -697,11 +697,43 @@ def _tracker(surface, target, opts, cwd, stdin):
 
 
 def _gh_api(args):
+    fields = {}
     for field_value in _options(args, _GH_API_LONG, _GH_API_SHORT).get("field", []):
         key, _, value = field_value.partition("=")
         if key.lower() in TEXT_KEYS and value.strip() and not value.startswith("@"):
-            return Message("comment", "gh api", "", value)
-    return None
+            fields[key.lower()] = value
+    if not fields:
+        return None
+    endpoint = next((arg for arg in args if re.search(r"/(?:pulls|issues)(?:/|$)", arg) and not arg.startswith("-")), "")
+    surface = "comment" if re.search(r"/(?:comments|reviews)(?:/|$)", endpoint) else "pr" if "/pulls" in endpoint else "issue" if "/issues" in endpoint else "comment"
+    body = "\n".join(value for key, value in fields.items() if key != "title")
+    return Message(surface, "gh api", fields.get("title", ""), body)
+
+
+def mcp_surface(tool, tool_input=None):
+    """Recognize publishing operations; leave read and unknown operations unclassified."""
+    words = key_words(tool)
+    if words & {"get", "read", "list", "search", "fetch", "find"} and not words & {"create", "update", "add", "edit", "post", "submit", "write"}:
+        return None
+    if not words & {"create", "update", "add", "edit", "post", "submit", "write", "comment", "review"}:
+        return None
+    if words & {"comment", "review", "note"}:
+        return "comment"
+    if words & {"pr", "pull", "merge"}:
+        return "pr"
+    if words & {"issue", "ticket"}:
+        return "issue"
+    return "comment"
+
+
+def mcp_messages(tool, tool_input):
+    surface = mcp_surface(tool, tool_input)
+    if surface is None:
+        return []
+    fields = mcp_fields(tool_input)
+    title = next((text for key, text in fields if "title" in key_words(key)), "")
+    body = "\n".join(text for key, text in fields if "title" not in key_words(key))
+    return [Message(surface, tool, title, body)] if title or body else []
 
 
 def _read_arg(value, cwd, stdin):

@@ -265,7 +265,7 @@ def test_mcp_fields_by_name_even_when_short():
         "context": "y" * 50,
         "title": "short",
     })
-    assert [key for key, _ in fields] == ["commentBody"]
+    assert [key for key, _ in fields] == ["commentBody", "title"]
     assert extract.mcp_fields({"body": "Generated with Claude"}) == [("body", "Generated with Claude")]
 
 

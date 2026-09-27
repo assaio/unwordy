@@ -1,7 +1,7 @@
 {
   "name": "unwordy",
-  "version": "0.3.0",
-  "description": "Keeps coding-agent comments, commits, PRs and replies concise. Local checks and optional hooks catch attribution and filler before review.",
+  "version": "0.4.0",
+  "description": "Personal and team writing profiles for coding agents. Preserve facts and repository conventions in commits, PRs, reviews, QA reports and design handoffs; local checks flag filler.",
   "author": {
     "name": "assaio",
     "url": "https://github.com/assaio"
@@ -14,20 +14,28 @@
     "pull-requests",
     "code-comments",
     "writing-style",
-    "hooks"
+    "hooks",
+    "team-voice",
+    "code-review",
+    "qa",
+    "design-handoff",
+    "agent-skills"
   ],
   "skills": "./skills/",
   "hooks": "./hooks/hooks.json",
   "interface": {
     "displayName": "unwordy",
-    "shortDescription": "Write like a terse developer, not an assistant",
-    "longDescription": "Loads a short writing profile, teaches repo conventions and checks diffs, commit messages and review text with local rules. Host hooks can stop matching writes before review.",
+    "shortDescription": "Clear commits and reviews in your team’s voice",
+    "longDescription": "Personal and team profiles with independent role and tone. Preserve evidence and required templates in dev, QA and design communication. Local checks and optional host hooks flag filler.",
     "developerName": "assaio",
     "category": "Developer Tools",
-    "capabilities": ["Read", "Write"],
+    "capabilities": [
+      "Read",
+      "Write"
+    ],
     "defaultPrompt": [
-      "Write the commit message for these changes",
-      "Rewrite this PR description so a human would write it"
+      "Write a PR description in our team’s voice, keeping risk and test evidence",
+      "Rewrite this bug report without losing reproduction details"
     ]
   }
 }

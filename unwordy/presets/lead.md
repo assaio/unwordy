@@ -1,3 +1,2 @@
-Brief and warm. Address people, acknowledge the point, then decide.
-One sentence of context when someone joins mid-thread. Never longer than the
-message you answer.
+Brief and warm. Acknowledge a useful point, then state the decision.
+Include enough context for someone joining the thread. Length follows the decision.

@@ -35,6 +35,13 @@ def run(mode, payload):
     prof = profile.resolve(_cwd(payload))
     if not prof.enabled:
         return None
+    if prof.diagnostics:
+        reason = "unwordy configuration: " + "; ".join(prof.diagnostics) + ". Fix the profile; checks are paused."
+        if payload.get("host") == "cursor":
+            return {"additional_context": reason} if mode == "session-start" else {"permission": "allow"}
+        if mode == "stop":
+            return {"systemMessage": reason}
+        return {"hookSpecificOutput": {"hookEventName": "SessionStart" if mode == "session-start" else "PreToolUse", "additionalContext": reason}}
     return handler(payload, prof, _cwd(payload))
 
 
@@ -92,7 +99,7 @@ def _pre_bash(payload, prof, cwd):
     for message in extract.shell_messages(command, cwd):
         if conventions is None:
             conventions = profile.commit_conventions(cwd)
-        for finding in lint.lint_message(message, prof.settings, conventions):
+        for finding in lint.lint_message(message, prof.settings, conventions, profile.pr_headings(cwd, prof.settings)):
             finding.target = f"bash:{message.target}"
             findings.append(finding)
     findings += _lint_changes(extract.shell_writes(command, cwd, _want(prof, cwd)), prof, cwd)
@@ -117,9 +124,9 @@ def _lint_changes(changes, prof, cwd):
 def _pre_mcp(payload, prof, cwd):
     tool = str(payload.get("tool_name") or "")
     findings = []
-    for key, text in extract.mcp_fields(payload.get("tool_input")):
-        for finding in lint.lint_field(key, text, prof.settings):
-            finding.target = f"{tool}:{key}"
+    for message in extract.mcp_messages(tool, payload.get("tool_input")):
+        for finding in lint.lint_message(message, prof.settings, required_headings=profile.pr_headings(cwd, prof.settings)):
+            finding.target = f"{tool}:{message.surface}"
             findings.append(finding)
     return _decide(findings, prof, payload)
 
@@ -169,6 +176,8 @@ def _decide(findings, prof, payload):
     if warn and not cursor:
         return {"hookSpecificOutput": {"hookEventName": "PreToolUse",
                                        "additionalContext": "\n".join(str(f) for f in warn)}}
+    if cursor:
+        return {"permission": "allow"}
     return None
 
 

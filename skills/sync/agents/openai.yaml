@@ -1,2 +1,6 @@
+interface:
+  display_name: "unwordy sync"
+  short_description: "Share the active voice across coding agents"
+  default_prompt: "Use $sync to carry our team voice into AGENTS.md."
 policy:
   allow_implicit_invocation: false

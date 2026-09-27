@@ -1,2 +1,6 @@
+interface:
+  display_name: "unwordy setup"
+  short_description: "Set up role, tone and writing preferences"
+  default_prompt: "Use $setup to configure a warm QA writing profile."
 policy:
   allow_implicit_invocation: false

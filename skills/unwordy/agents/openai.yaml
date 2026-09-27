@@ -1,0 +1,4 @@
+interface:
+  display_name: "unwordy unwordy"
+  short_description: "Write work messages in your team’s voice"
+  default_prompt: "Use $unwordy to rewrite this PR, preserving risk and test evidence."

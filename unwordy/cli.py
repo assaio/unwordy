@@ -65,6 +65,12 @@ def _message(path, surface):
 def check(args):
     root = _root() if args.diff or args.staged or args.commits else Path.cwd()
     prof = profile.resolve(root)
+    if prof.diagnostics:
+        if args.json:
+            print(json.dumps({"findings": [], "errors": prof.diagnostics}))
+        else:
+            print("unwordy configuration: " + "; ".join(prof.diagnostics), file=sys.stderr)
+        return 2
     if not prof.enabled or os.environ.get("UNWORDY_OFF") == "1":
         findings = []
     else:
@@ -77,7 +83,7 @@ def check(args):
         if args.message_file:
             msg = _message(args.message_file, args.surface)
             for finding in lint.lint_message(msg, prof.settings,
-                                             profile.commit_conventions(root)):
+                                             profile.commit_conventions(root), profile.pr_headings(root, prof.settings)):
                 finding.target = str(args.message_file)
                 findings.append(finding)
         if args.commits:
@@ -116,6 +122,8 @@ def doctor(args):
         "strict": prof.settings["strict"],
         "hook_file": (root / "hooks" / "hooks.json").is_file(),
         "host_trust": "check the host hook browser; local CLI cannot inspect it",
+        "host_enforcement": "not observed by this command; run the documented live smoke test",
+        "errors": prof.diagnostics,
     }
     identity = _git(Path.cwd(), "config", "user.name", check=False).stdout.decode("utf-8", "replace").strip()
     data["git_identity"] = (
@@ -128,6 +136,14 @@ def doctor(args):
     else:
         for key, value in data.items():
             print(f"{key}: {value}")
+    return 2 if prof.diagnostics else 0
+
+
+def voice(args):
+    prof = profile.resolve()
+    if prof.diagnostics:
+        raise ValueError("configuration: " + "; ".join(prof.diagnostics))
+    print(prof.voice())
     return 0
 
 
@@ -202,6 +218,8 @@ def main(argv=None):
     diagnostics = sub.add_parser("doctor", help="show local profile and hook readiness")
     diagnostics.add_argument("--json", action="store_true")
     diagnostics.set_defaults(func=doctor)
+    instructions = sub.add_parser("voice", help="print the resolved writing instructions")
+    instructions.set_defaults(func=voice)
     history = sub.add_parser("examples", help="list or show local commit examples")
     history.add_argument("--limit", type=int, default=10)
     history.add_argument("--show", nargs="+", metavar="COMMIT")

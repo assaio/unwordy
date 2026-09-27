@@ -1,4 +1,4 @@
-"""Lint rules. H1..H4 always deny; S1..S7 warn, deny or stay silent per the profile's strict.
+"""Lint rules with stable ids, profile effects and repository template exceptions.
 
 A rule with several patterns gives each one a sub-id (H2a, S5f); the family id is the first two
 characters and is what `disable:` and the loop guard also accept.
@@ -20,7 +20,7 @@ class Finding:
 
     @property
     def hard(self):
-        return self.rule.startswith("H")
+        return self.rule in ("H1", "H2a", "H2c", "H3")
 
     @property
     def family(self):
@@ -38,6 +38,9 @@ def action(finding, settings):
     """Return block, warn or ignore for a finding under one profile."""
     if finding.disabled(settings):
         return "ignore"
+    override = settings.get(f"rule.{finding.rule.lower()}", settings.get(f"rule.{finding.family.lower()}"))
+    if override:
+        return "ignore" if override == "off" else override
     if finding.rule == "H1":
         value = settings.get(f"{finding.surface}.attribution", settings["attribution"])
         return {"allow": "ignore", "warn": "warn", "block": "block"}.get(value, "block")
@@ -94,7 +97,7 @@ _H4_OPENER = re.compile(
 )
 _WHY = re.compile(
     r"\b(?:because|since|otherwise|unless|in case|due to|to avoid|to prevent|workaround"
-    r"|must|cannot|can't|never|so that)\b|,\s*so\b",
+    r"|must|cannot|can't|never|so that|contract|mandated|required by|RFC|specification)\b|,\s*so\b",
     re.I,
 )
 _H4_ECHO = re.compile(
@@ -155,7 +158,7 @@ _WHERE = {"commit": "the commit message", "pr": "the PR text", "issue": "the iss
 _STRUCTURED_KEYS = {"body", "comment", "description", "message", "note"}
 
 
-def lint_message(message, settings, conventions=False):
+def lint_message(message, settings, conventions=False, required_headings=()):
     """Commit, PR, issue and comment text extracted from a shell command.
 
     With `conventions`, the repo has its own commit format (commitlint, a commit template), so
@@ -170,6 +173,13 @@ def lint_message(message, settings, conventions=False):
         findings += _boilerplate(message.title, message.body, where)
     if conventions and message.surface == "commit":
         findings = [f for f in findings if f.rule not in ("S5a", "S6c")]
+    if message.surface == "pr" and settings.get("pr_template") != "ignore":
+        headings = {line.strip().lower() for line in _prose_lines(message.body) if _HEADER.match(line)}
+        required = set(required_headings)
+        if settings.get("pr_template") == "respect":
+            required = headings
+        if headings and headings <= required:
+            findings = [f for f in findings if f.rule not in ("S5d", "S5f", "S6a")]
     return findings
 
 
@@ -177,8 +187,6 @@ def lint_field(key, text, settings):
     """A long text field of an MCP tool call, such as a Jira or GitHub comment body."""
     prose = "\n".join(_prose_lines(text))
     findings = _attribution(prose, "the comment", False, "comment")
-    if len(text.strip()) <= 40:
-        return findings
     findings += _dashes(prose, "the comment")
     findings += _banned(prose, "the comment", settings)
     if extract.key_words(key) & _STRUCTURED_KEYS:
@@ -337,6 +345,8 @@ _H2 = (
 def _task_references(text, settings, hit):
     for rule, pattern, what in _H2:
         if pattern.search(text):
+            if rule == "H2b" and re.search(r"\b(?:RFC|ISO|algorithm|protocol|specification)\b", text, re.I):
+                continue
             hit(rule, f"{what} ({_snippet(text)}). Say why the code is this way, or delete it.")
             return
     if settings.get("allow_ticket_refs"):
@@ -504,7 +514,7 @@ def _banned_regex(words):
 
 def _limit(settings, surface, key, default):
     """A per-surface override such as pr.max_body_lines, else the flat key, else the default."""
-    return settings.get(f"{surface}.{key}") or settings.get(_FLAT.get(key, key)) or default
+    return settings.get(f"{surface}.{key}", settings.get(_FLAT.get(key, key), default))
 
 
 _FLAT = {"max_body_lines": "max_pr_body_lines"}
@@ -567,7 +577,7 @@ def _prose_indexed(lines):
         if _FENCE.match(line):
             fenced = not fenced
             continue
-        if not fenced:
+        if not fenced and not line.lstrip().startswith(">"):
             yield index, _INLINE_CODE.sub("", line)
 
 
