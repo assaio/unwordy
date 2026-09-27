@@ -21,6 +21,11 @@ def main():
     version = json.loads(git("show", "HEAD:plugin.json"))["version"]
     destination.mkdir(parents=True, exist_ok=True)
     files = [path.decode() for path in git("ls-files", "-z").split(b"\0") if path]
+    modes = {}
+    for record in git("ls-tree", "-rz", "HEAD").split(b"\0"):
+        if record:
+            metadata, name = record.split(b"\t", 1)
+            modes[name.decode()] = int(metadata.split()[0], 8)
     artifacts = []
     for name, selected, prefix in (
         (f"unwordy-{version}.zip", files, ""),
@@ -31,7 +36,7 @@ def main():
             for source in selected:
                 info = zipfile.ZipInfo(source.removeprefix(prefix))
                 info.compress_type = zipfile.ZIP_DEFLATED
-                info.external_attr = 0o100644 << 16
+                info.external_attr = modes[source] << 16
                 archive.writestr(info, git("show", f"HEAD:{source}"))
         artifacts.append(f"{hashlib.sha256(path.read_bytes()).hexdigest()}  {path.name}")
     (destination / "SHA256SUMS").write_text("\n".join(artifacts) + "\n")

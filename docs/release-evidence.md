@@ -2,7 +2,7 @@
 
 Date: 2026-09-27. Local Python: 3.9. Claude Code: 2.1.283. Codex CLI: 0.157.1.
 
-- Offline Python suite passed before final release verification; final count is recorded in the GitHub release and CI results.
+- Offline Python suite: 316 passed. CI also checks Python 3.9, 3.11 and 3.14.
 - Claude marketplace and plugin strict validation passed.
 - A separate bundled Codex scaffold validator rejects hooks and explicit-only
   skill metadata supported by the current host documentation. Those fields are
