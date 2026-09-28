@@ -29,6 +29,24 @@ def test_disabled_profile_has_no_voice(project):
     assert configure(project, "enabled: false").voice() == ""
 
 
+def test_lazy_tone_keeps_casual_punctuation_without_losing_filler_checks(project):
+    settings = configure(project, "tone: lazy").settings
+    message = extract.Message("comment", "test", "", "Quick note — we can remove this lock. "
+                              "The caller holds it already. Seamlessly done.")
+    effects = {finding.rule: lint.action(finding, settings)
+               for finding in lint.lint_message(message, settings)}
+    assert effects["S1"] == "ignore"
+    assert effects["S2"] == "warn"
+    long_title = extract.Message(
+        "pr", "test",
+        "A title that is deliberately longer than the usual seventy-two character preference",
+        "The caller holds the lock.",
+    )
+    effects = {finding.rule: lint.action(finding, settings)
+               for finding in lint.lint_message(long_title, settings)}
+    assert effects["S5a"] == "ignore"
+
+
 @pytest.mark.parametrize("entry", ["preset: typo", "strict: typo", "attribution: typo",
                                   "max_subject: -1", "pr.max_body_lines: 0", "enabled: maybe",
                                   "role: manager", "tone: terse", "rule.X1: warn",

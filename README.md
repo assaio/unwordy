@@ -112,8 +112,16 @@ then built-in `senior`. Repository requirements always win over voice preference
 | Design | UI states, behavior, rationale, accessibility and constraints |
 | Lead | Decision, trade-off, owner and next step when supplied |
 
-Tone is separate: neutral, direct, warm or formal. The custom body can describe
-personal rhythm, casing and punctuation. Already useful text can stay unchanged.
+Tone is separate: neutral, direct, warm, formal or lazy. The custom body can
+describe personal rhythm, casing and punctuation. Already useful text can stay
+unchanged.
+Choose `preset: lazy` or `tone: lazy` for plain notes with casual punctuation
+and no suggested length or formatting limits. Facts, required templates and
+test evidence still stay. The [demo](https://assaio.github.io/unwordy/) shows
+lazy alongside direct and warm in seven languages.
+The multilingual demo shows model-guided examples. Local word-pattern checks
+are strongest in English, partial in Polish and German, and not localized for
+Spanish, French, Dutch or Finnish.
 See [PL/EN examples](skills/write/references/roles.md),
 [team templates](templates/) and the [profile format](docs/configuration.md).
 

@@ -1,5 +1,15 @@
 # Changelog
 
+## v0.5.0
+
+- Add `tone: lazy` alongside the existing lazy preset. Both accept fragments,
+  lowercase and casual punctuation, and turn off S1 and S5 suggestions by
+  default. Explicit rule settings can restore either check.
+- Show direct, warm and lazy examples for developer, QA, design and lead roles
+  in English, Polish, German, Spanish, French, Dutch and Finnish on the demo.
+  Mark each example with its language for assistive technology.
+- Describe the local checker's language coverage beside the examples.
+
 ## v0.4.1
 
 - Lead the standalone skill with its purpose and a concrete QA example on

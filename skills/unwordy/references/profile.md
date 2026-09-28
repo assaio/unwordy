@@ -9,7 +9,7 @@ Supported keys:
 
 - `preset`: lazy, senior, qa, lead, formal, custom
 - `role`: developer, qa, design, lead, auto
-- `tone`: neutral, direct, warm, formal, auto
+- `tone`: neutral, direct, warm, formal, lazy, auto
 - `language`, `enabled`, `allow_ticket_refs`
 - `strict`: warn, block, off
 - `disable`: comma-separated rule IDs
@@ -24,3 +24,5 @@ Treat configured length limits as preferences when required content needs
 space. For S1, prefer comma, colon or period unless it is disabled; an
 intentional personal dash may be preserved when S1 is disabled. Do not infer
 that `strict: off` permits dropping required facts or disclosure.
+`preset: lazy` and `tone: lazy` turn off S1 and S5 by default. An explicit
+`rule.S1` or `rule.S5` setting can restore either check.

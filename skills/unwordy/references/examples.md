@@ -38,6 +38,13 @@ Warm: "Thanks for checking the race. The caller already holds this lock, so we
 can remove it here. The change is still untested."
 PL: "Usuń tę blokadę: wywołujący już ją trzyma. Zmiana nie była testowana."
 
+Lazy EN: "this lock can go, the caller already holds it. not tested yet"
+Lazy PL: "tę blokadę można usunąć, wywołujący już ją trzyma. jeszcze nie testowane"
+
+Lazy is a quick note, not permission to drop test status or other supplied
+facts. Use plain paragraphs without decorative headings unless a repository
+template requires them.
+
 ## Decision
 
 "Keep the old API for this release. Two clients still use it. Marta owns the

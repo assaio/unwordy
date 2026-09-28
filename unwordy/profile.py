@@ -63,7 +63,7 @@ RULE_IDS = frozenset(("H1", "H2", "H3", "H4", "S1", "S2", "S3", "S4", "S5", "S6"
                      "S5e", "S5f", "S6a", "S6b", "S6c", "S7a", "S7b"))
 _ENUMS = {"strict": _STRICT, "preset": (*PRESETS, "custom"),
           "role": ("auto", "developer", "qa", "design", "lead"),
-          "tone": ("auto", "neutral", "direct", "warm", "formal"),
+          "tone": ("auto", "neutral", "direct", "warm", "formal", "lazy"),
           "pr_template": ("auto", "respect", "ignore")}
 _ROLES = {
     "developer": "PRs and reviews: retain the reason, risk, evidence and relevant code location.",
@@ -73,7 +73,11 @@ _ROLES = {
 }
 _TONES = {"neutral": "Use a neutral conversational register.", "direct": "Be direct; keep enough context for the reader.",
           "warm": "Be warm; keep useful acknowledgements and the writer's personality.",
-          "formal": "Use complete sentences and a formal register."}
+          "formal": "Use complete sentences and a formal register.",
+          "lazy": ("Write like a quick note to a teammate. Fragments, lowercase and casual punctuation "
+                   "are fine. Skip decorative formatting, but keep facts and required sections.")}
+
+_LAZY_RULES = {"rule.s1": "off", "rule.s5": "off"}
 
 
 @dataclass
@@ -226,6 +230,8 @@ def resolve(cwd=None, env=None):
             path = None
     diagnostics = validate(_read(path)) if path else []
     settings = dict(DEFAULTS)
+    if str(raw.get("preset", "")).lower() == "lazy" or str(raw.get("tone", "")).lower() == "lazy":
+        settings.update(_LAZY_RULES)
     for key, value in raw.items():
         if _setting_error(key, value) is None:
             settings[key] = value.lower() if key in _ENUMS or key.endswith(".attribution") or key == "attribution" or key.startswith("rule.") else value

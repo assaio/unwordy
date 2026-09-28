@@ -25,6 +25,8 @@ Disable wins over an effect. For H1, explicit effect wins over attribution polic
 heuristic family on the same target downgrade further denials to warnings.
 Hard defaults H1/H2a/H2c/H3 keep blocking. H1 supports per-surface disclosure
 policy. Repository-required disclosure should use allow or disable H1.
+The lazy preset and tone default S1 and S5 to off; explicit `rule.S1` and
+`rule.S5` settings can turn them back on.
 
 License headers, directives, generated files, fixture paths, snapshots and
 lock files are exempt. Fenced code and inline code are excluded from prose

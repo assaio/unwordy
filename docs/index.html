@@ -14,20 +14,140 @@
 <header><img src="assets/unwordy.svg" alt=""><strong>unwordy</strong><a href="https://github.com/assaio/unwordy">GitHub</a></header>
 <h1>Clear commits, PRs and reviews in your team's voice.</h1>
 <p>Keep the facts, risks and evidence. Follow the repository's conventions. Use a personal or team profile, with role and tone chosen independently.</p>
-<div class="controls"><label>Role<select id="role"><option value="developer">Developer</option><option value="qa">QA</option><option value="design">Design</option><option value="lead">Lead</option></select></label><label>Tone<select id="tone"><option value="direct">Direct</option><option value="warm">Warm</option></select></label><label>Language<select id="language"><option value="en">English</option><option value="pl">Polski</option></select></label></div>
+<div class="controls"><label>Role<select id="role"><option value="developer">Developer</option><option value="qa">QA</option><option value="design">Design</option><option value="lead">Lead</option></select></label><label>Tone<select id="tone"><option value="direct">Direct</option><option value="warm">Warm</option><option value="lazy">Lazy</option></select></label><label>Language<select id="language"><option value="en">English</option><option value="pl">Polski</option><option value="de">Deutsch</option><option value="es">Español</option><option value="fr">Français</option><option value="nl">Nederlands</option><option value="fi">Suomi</option></select></label></div>
 <div class="pair" aria-live="polite"><article><h2>Source</h2><pre id="source"></pre></article><article><h2>In the chosen voice</h2><pre id="result"></pre></article></div>
-<p class="note">Illustrative outputs from supplied facts, not a live model or benchmark result. Personal punctuation is welcome. The checker makes no model calls.</p>
+<p class="note">Illustrative outputs from supplied facts, not a live model or benchmark result. Lazy keeps casual punctuation and skips decorative formatting. Local word-pattern checks are strongest in English, partial in Polish and German, and not localized for Spanish, French, Dutch or Finnish.</p>
 <section><h2>Try the standalone skill</h2><pre class="install">npx skills add assaio/unwordy --skill unwordy</pre><p>Works without a plugin. For local checks and host hooks, <a href="https://github.com/assaio/unwordy#start-with-your-agent">install the plugin or checker</a>. Codex and Cursor hook enforcement still needs live confirmation.</p></section>
 <section><h2>Made for work around the code</h2><p>PRs keep the reason, risk and observed tests. QA reports keep reproduction and versions. Design handoffs keep states, accessibility and constraints. Required templates and disclosure stay.</p><p><a href="https://github.com/assaio/unwordy/blob/main/docs/configuration.md">Configure a team profile</a> · <a href="https://github.com/assaio/unwordy/blob/main/benchmarks/README.md">Read the evaluation method</a> · <a href="https://github.com/assaio/unwordy/discussions">Share feedback</a></p></section>
 <footer>MIT licensed. No account needed for the local checker. Samples used by your agent follow that host's data policy.</footer>
 </main><script>
 const examples = {
- developer: {en:{source:"Thanks for the comprehensive review! I have seamlessly addressed the locking concern. The caller already holds the lock, so this lock is redundant. The change has not been tested.",direct:"Remove this lock: the caller already holds it. The change is untested.",warm:"Thanks for checking this lock. The caller already holds this lock, so we can remove it here. The change is still untested."},pl:{source:"Dziękuję za kompleksowe review! Bezproblemowo rozwiązaliśmy problem z blokadą. Wywołujący już ją trzyma, więc ta blokada jest zbędna. Zmiana nie była testowana.",direct:"Usuń tę blokadę: wywołujący już ją trzyma. Zmiana nie była testowana.",warm:"Dzięki za sprawdzenie tej blokady. Wywołujący już trzyma tę blokadę, więc możemy ją tutaj usunąć. Zmiana nadal nie była testowana."}},
- qa: {en:{source:"We comprehensively tested login. Safari 18.2: sign out, then sign in. The button stays disabled in 2/10 runs. Expected: dashboard. Actual: login screen, AUTH-409. Not reproduced on Firefox 135.",direct:"Safari 18.2: sign out, then sign in. In 2/10 runs the button stays disabled. Expected: dashboard; actual: login screen, AUTH-409. Not reproduced on Firefox 135.",warm:"We checked login on Safari 18.2: sign out, then sign in. In 2/10 runs the button stays disabled. Expected: dashboard; actual: login screen, AUTH-409. We couldn't reproduce it on Firefox 135."},pl:{source:"Kompleksowo sprawdziliśmy logowanie. Safari 18.2: wyloguj się i zaloguj. W 2/10 prób przycisk pozostaje nieaktywny. Oczekiwane: dashboard. Wynik: ekran logowania, AUTH-409. Nie odtworzono w Firefox 135.",direct:"Safari 18.2: wyloguj się i zaloguj. W 2/10 prób przycisk pozostaje nieaktywny. Oczekiwane: dashboard; wynik: ekran logowania, AUTH-409. Nie odtworzono w Firefox 135.",warm:"Sprawdziliśmy logowanie w Safari 18.2: wyloguj się i zaloguj. W 2/10 prób przycisk pozostaje nieaktywny. Oczekiwane: dashboard; wynik: ekran logowania, AUTH-409. W Firefox 135 nie udało się tego odtworzyć."}},
- design: {en:{source:"This design seamlessly streamlines the empty state. Hide the spinner when no rows return, show 'No results', and keep focus on the filter. Screen readers should announce the result once. No user study was run.",direct:"Empty results: hide the spinner, show 'No results', and keep focus on the filter. Announce the result once to screen readers. No user study was run.",warm:"For empty results, let's hide the spinner, show 'No results', and keep focus on the filter. Screen readers should announce the result once. We haven't run a user study."},pl:{source:"Ta innowacyjna zmiana bezproblemowo poprawia pusty stan. Ukryj spinner, pokaż 'Brak wyników' i pozostaw fokus na filtrze. Czytnik ekranu ma ogłosić wynik raz. Nie przeprowadzono badania z użytkownikami.",direct:"Brak wyników: ukryj spinner, pokaż 'Brak wyników' i pozostaw fokus na filtrze. Czytnik ekranu ma ogłosić wynik raz. Nie przeprowadzono badania z użytkownikami.",warm:"Przy braku wyników ukryjmy spinner, pokażmy 'Brak wyników' i pozostawmy fokus na filtrze. Czytnik ekranu ma ogłosić wynik raz. Nie przeprowadziliśmy badania z użytkownikami."}},
- lead: {en:{source:"It is worth noting that we should holistically preserve the old API for this release. Two clients still use it. Marta owns migration. Decide on removal after their next deploy; no removal date is agreed.",direct:"Keep the old API for this release. Two clients still use it. Marta owns migration. Decide on removal after their next deploy; no removal date is agreed.",warm:"Let's keep the old API for this release: two clients still use it. Marta owns migration. We can decide on removal after their next deploy; we haven't agreed a removal date."},pl:{source:"Warto podkreślić, że powinniśmy zachować stare API w tym wydaniu. Korzystają z niego dwa klienty. Marta odpowiada za migrację. Zdecyduj o usunięciu po ich kolejnym wdrożeniu; nie ustalono daty.",direct:"Zachowaj stare API w tym wydaniu. Korzystają z niego dwa klienty. Marta odpowiada za migrację. Zdecyduj o usunięciu po ich kolejnym wdrożeniu; nie ustalono daty.",warm:"Zachowajmy stare API w tym wydaniu: korzystają z niego dwa klienty. Marta odpowiada za migrację. Do decyzji o usunięciu wróćmy po ich kolejnym wdrożeniu; nie ustaliliśmy daty."}}
+ developer: {en:{source:"Thanks for the comprehensive review! I have seamlessly addressed the locking concern. The caller already holds the lock, so this lock is redundant. The change has not been tested.",direct:"Remove this lock: the caller already holds it. The change is untested.",warm:"Thanks for checking this lock. The caller already holds this lock, so we can remove it here. The change is still untested.",lazy:"caller already has this lock, so this one can go. not tested yet"},pl:{source:"Dziękuję za kompleksowe review! Bezproblemowo rozwiązaliśmy problem z blokadą. Wywołujący już ją trzyma, więc ta blokada jest zbędna. Zmiana nie była testowana.",direct:"Usuń tę blokadę: wywołujący już ją trzyma. Zmiana nie była testowana.",warm:"Dzięki za sprawdzenie tej blokady. Wywołujący już trzyma tę blokadę, więc możemy ją tutaj usunąć. Zmiana nadal nie była testowana.",lazy:"tę blokadę można usunąć, wywołujący już ją trzyma. jeszcze nie testowane"}},
+ qa: {en:{source:"We comprehensively tested login. Safari 18.2: sign out, then sign in. The button stays disabled in 2/10 runs. Expected: dashboard. Actual: login screen, AUTH-409. Not reproduced on Firefox 135.",direct:"Safari 18.2: sign out, then sign in. In 2/10 runs the button stays disabled. Expected: dashboard; actual: login screen, AUTH-409. Not reproduced on Firefox 135.",warm:"We checked login on Safari 18.2: sign out, then sign in. In 2/10 runs the button stays disabled. Expected: dashboard; actual: login screen, AUTH-409. We couldn't reproduce it on Firefox 135.",lazy:"Safari 18.2: sign out and back in, button stays disabled 2/10 times. expected dashboard, got login screen (AUTH-409). didn't reproduce on Firefox 135"},pl:{source:"Kompleksowo sprawdziliśmy logowanie. Safari 18.2: wyloguj się i zaloguj. W 2/10 prób przycisk pozostaje nieaktywny. Oczekiwane: dashboard. Wynik: ekran logowania, AUTH-409. Nie odtworzono w Firefox 135.",direct:"Safari 18.2: wyloguj się i zaloguj. W 2/10 prób przycisk pozostaje nieaktywny. Oczekiwane: dashboard; wynik: ekran logowania, AUTH-409. Nie odtworzono w Firefox 135.",warm:"Sprawdziliśmy logowanie w Safari 18.2: wyloguj się i zaloguj. W 2/10 prób przycisk pozostaje nieaktywny. Oczekiwane: dashboard; wynik: ekran logowania, AUTH-409. W Firefox 135 nie udało się tego odtworzyć.",lazy:"Safari 18.2: wyloguj się i zaloguj, przycisk nieaktywny 2/10 razy. miało być dashboard, jest ekran logowania (AUTH-409). na Firefox 135 nie odtworzone"}},
+ design: {en:{source:"This design seamlessly streamlines the empty state. Hide the spinner when no rows return, show 'No results', and keep focus on the filter. Screen readers should announce the result once. No user study was run.",direct:"Empty results: hide the spinner, show 'No results', and keep focus on the filter. Announce the result once to screen readers. No user study was run.",warm:"For empty results, let's hide the spinner, show 'No results', and keep focus on the filter. Screen readers should announce the result once. We haven't run a user study.",lazy:"no rows: hide spinner, show 'No results', leave focus on the filter. screen reader announces once. no user study yet"},pl:{source:"Ta innowacyjna zmiana bezproblemowo poprawia pusty stan. Ukryj spinner, pokaż 'Brak wyników' i pozostaw fokus na filtrze. Czytnik ekranu ma ogłosić wynik raz. Nie przeprowadzono badania z użytkownikami.",direct:"Brak wyników: ukryj spinner, pokaż 'Brak wyników' i pozostaw fokus na filtrze. Czytnik ekranu ma ogłosić wynik raz. Nie przeprowadzono badania z użytkownikami.",warm:"Przy braku wyników ukryjmy spinner, pokażmy 'Brak wyników' i pozostawmy fokus na filtrze. Czytnik ekranu ma ogłosić wynik raz. Nie przeprowadziliśmy badania z użytkownikami.",lazy:"brak wyników: ukryj spinner, pokaż 'Brak wyników', fokus zostaje na filtrze. czytnik ogłasza raz. bez badania z użytkownikami"}},
+ lead: {en:{source:"It is worth noting that we should holistically preserve the old API for this release. Two clients still use it. Marta owns migration. Decide on removal after their next deploy; no removal date is agreed.",direct:"Keep the old API for this release. Two clients still use it. Marta owns migration. Decide on removal after their next deploy; no removal date is agreed.",warm:"Let's keep the old API for this release: two clients still use it. Marta owns migration. We can decide on removal after their next deploy; we haven't agreed a removal date.",lazy:"old API stays for this release, two clients still use it. Marta handles migration. decide on removal after their next deploy, no date set"},pl:{source:"Warto podkreślić, że powinniśmy zachować stare API w tym wydaniu. Korzystają z niego dwa klienty. Marta odpowiada za migrację. Zdecyduj o usunięciu po ich kolejnym wdrożeniu; nie ustalono daty.",direct:"Zachowaj stare API w tym wydaniu. Korzystają z niego dwa klienty. Marta odpowiada za migrację. Zdecyduj o usunięciu po ich kolejnym wdrożeniu; nie ustalono daty.",warm:"Zachowajmy stare API w tym wydaniu: korzystają z niego dwa klienty. Marta odpowiada za migrację. Do decyzji o usunięciu wróćmy po ich kolejnym wdrożeniu; nie ustaliliśmy daty.",lazy:"stare API zostaje w tym wydaniu, dwóch klientów jeszcze używa. Marta robi migrację. po ich kolejnym wdrożeniu decyzja o usunięciu, daty brak"}}
+};
+examples.developer.de = {
+  source: "Danke für das umfassende Review! Ich habe das Problem mit der Sperre nahtlos behoben. Der Aufrufer hält die Sperre bereits, daher ist diese Sperre überflüssig. Die Änderung wurde nicht getestet.",
+  direct: "Diese Sperre entfernen: Der Aufrufer hält sie bereits. Die Änderung ist ungetestet.",
+  warm: "Danke fürs Prüfen der Sperre. Der Aufrufer hält sie bereits, daher können wir diese hier entfernen. Die Änderung ist noch ungetestet.",
+  lazy: "Sperre hier raus, der Aufrufer hält sie schon. noch nicht getestet"
+};
+examples.qa.de = {
+  source: "Wir haben den Login umfassend getestet. Safari 18.2: abmelden, dann wieder anmelden. In 2 von 10 Durchläufen bleibt die Schaltfläche deaktiviert. Erwartet: dashboard. Tatsächlich: Anmeldeseite, AUTH-409. In Firefox 135 nicht reproduziert.",
+  direct: "Safari 18.2: abmelden, dann wieder anmelden. In 2 von 10 Durchläufen bleibt die Schaltfläche deaktiviert. Erwartet: dashboard; tatsächlich: Anmeldeseite, AUTH-409. In Firefox 135 nicht reproduziert.",
+  warm: "Wir haben den Login in Safari 18.2 geprüft: abmelden, dann wieder anmelden. In 2 von 10 Durchläufen bleibt die Schaltfläche deaktiviert. Erwartet: dashboard; tatsächlich: Anmeldeseite, AUTH-409. In Firefox 135 konnten wir es nicht reproduzieren.",
+  lazy: "Safari 18.2: ab- und wieder anmelden, Button bleibt 2/10 Mal deaktiviert. erwartet dashboard, stattdessen Anmeldeseite (AUTH-409). in Firefox 135 nicht reproduziert"
+};
+examples.design.de = {
+  source: "Dieses Design verbessert den Leerzustand nahtlos. Wenn keine Zeilen zurückkommen, Spinner ausblenden, „Keine Ergebnisse“ anzeigen und Fokus auf dem Filter lassen. Der Screenreader soll das Ergebnis einmal ansagen. Es wurde keine Nutzerstudie durchgeführt.",
+  direct: "Keine Ergebnisse: Spinner ausblenden, „Keine Ergebnisse“ anzeigen und Fokus auf dem Filter lassen. Der Screenreader soll das Ergebnis einmal ansagen. Es wurde keine Nutzerstudie durchgeführt.",
+  warm: "Wenn keine Ergebnisse zurückkommen, blenden wir den Spinner aus, zeigen „Keine Ergebnisse“ an und lassen den Fokus auf dem Filter. Der Screenreader soll das Ergebnis einmal ansagen. Wir haben keine Nutzerstudie durchgeführt.",
+  lazy: "keine Zeilen: Spinner weg, „Keine Ergebnisse“ zeigen, Fokus bleibt auf dem Filter. Screenreader sagt es einmal an. keine Nutzerstudie"
+};
+examples.lead.de = {
+  source: "Es ist erwähnenswert, dass wir die alte API für dieses Release ganzheitlich beibehalten sollten. Zwei Clients nutzen sie noch. Marta verantwortet die Migration. Über die Entfernung nach ihrem nächsten Deployment entscheiden; kein Datum vereinbart.",
+  direct: "Alte API für dieses Release behalten. Zwei Clients nutzen sie noch. Marta verantwortet die Migration. Nach ihrem nächsten Deployment über die Entfernung entscheiden; kein Datum vereinbart.",
+  warm: "Lassen wir die alte API für dieses Release bestehen: Zwei Clients nutzen sie noch. Marta verantwortet die Migration. Nach ihrem nächsten Deployment können wir über die Entfernung entscheiden; ein Datum haben wir nicht vereinbart.",
+  lazy: "alte API bleibt für dieses Release, zwei Clients nutzen sie noch. Marta macht die Migration. nach deren nächstem Deployment über Entfernung entscheiden, Datum offen"
+};
+examples.developer.es = {
+  source: "Gracias por la revisión exhaustiva. He resuelto sin problemas el tema del lock. Quien llama ya tiene el lock, así que este sobra. El cambio no se ha probado.",
+  direct: "Quita este lock: quien llama ya lo tiene. El cambio no se ha probado.",
+  warm: "Gracias por revisar el lock. Quien llama ya lo tiene, así que podemos quitar este. Aún no hemos probado el cambio.",
+  lazy: "este lock sobra, quien llama ya lo tiene. aún sin probar"
+};
+examples.qa.es = {
+  source: "Hemos probado exhaustivamente el inicio de sesión. Safari 18.2: cerrar sesión y volver a entrar. En 2 de 10 intentos, el botón queda desactivado. Esperado: dashboard. Real: pantalla de inicio de sesión, AUTH-409. No se reproduce en Firefox 135.",
+  direct: "Safari 18.2: cerrar sesión y volver a entrar. En 2 de 10 intentos, el botón queda desactivado. Esperado: dashboard; real: pantalla de inicio de sesión, AUTH-409. No se reproduce en Firefox 135.",
+  warm: "Probamos el inicio de sesión en Safari 18.2: cerrar sesión y volver a entrar. En 2 de 10 intentos, el botón queda desactivado. Esperado: dashboard; real: pantalla de inicio de sesión, AUTH-409. No pudimos reproducirlo en Firefox 135.",
+  lazy: "Safari 18.2: salir y volver a entrar, botón desactivado 2/10 veces. esperábamos dashboard, sale la pantalla de inicio (AUTH-409). en Firefox 135 no se reprodujo"
+};
+examples.design.es = {
+  source: "Este diseño mejora sin problemas el estado vacío. Si no hay filas, oculta el spinner, muestra «Sin resultados» y mantén el foco en el filtro. El lector de pantalla debe anunciar el resultado una vez. No se realizó ningún estudio con usuarios.",
+  direct: "Sin filas: oculta el spinner, muestra «Sin resultados» y mantén el foco en el filtro. El lector de pantalla debe anunciar el resultado una vez. No se realizó ningún estudio con usuarios.",
+  warm: "Si no hay filas, ocultemos el spinner, mostremos «Sin resultados» y dejemos el foco en el filtro. El lector de pantalla debe anunciar el resultado una vez. No hemos hecho un estudio con usuarios.",
+  lazy: "sin filas: quitar spinner, mostrar «Sin resultados», foco en el filtro. el lector lo anuncia una vez. sin estudio con usuarios"
+};
+examples.lead.es = {
+  source: "Cabe señalar que debemos conservar la API antigua en esta versión. Dos clientes todavía la usan. Marta se encarga de la migración. Decidir la retirada después de su próximo despliegue; no hay fecha acordada.",
+  direct: "Conservar la API antigua en esta versión. Dos clientes todavía la usan. Marta se encarga de la migración. Decidir la retirada después de su próximo despliegue; no hay fecha acordada.",
+  warm: "Conservemos la API antigua en esta versión: dos clientes todavía la usan. Marta se encarga de la migración. Podemos decidir la retirada después de su próximo despliegue; aún no hay fecha acordada.",
+  lazy: "API antigua se queda esta versión, dos clientes aún la usan. Marta lleva la migración. decidir retirada tras su próximo despliegue, sin fecha"
+};
+examples.developer.fr = {
+  source: "Merci pour la revue complète ! J'ai résolu sans difficulté le problème de verrouillage. L'appelant détient déjà le verrou, donc celui-ci est inutile. Le changement n'a pas été testé.",
+  direct: "Supprimer ce verrou : l'appelant le détient déjà. Le changement n'a pas été testé.",
+  warm: "Merci d'avoir vérifié ce verrou. L'appelant le détient déjà, donc on peut retirer celui-ci. Le changement n'a pas encore été testé.",
+  lazy: "ce verrou en trop, l'appelant l'a déjà. pas encore testé"
+};
+examples.qa.fr = {
+  source: "Nous avons testé la connexion de façon exhaustive. Safari 18.2 : se déconnecter, puis se reconnecter. Dans 2 essais sur 10, le bouton reste désactivé. Attendu : dashboard. Observé : écran de connexion, AUTH-409. Non reproduit sur Firefox 135.",
+  direct: "Safari 18.2 : se déconnecter, puis se reconnecter. Dans 2 essais sur 10, le bouton reste désactivé. Attendu : dashboard ; observé : écran de connexion, AUTH-409. Non reproduit sur Firefox 135.",
+  warm: "Nous avons vérifié la connexion sur Safari 18.2 : se déconnecter, puis se reconnecter. Dans 2 essais sur 10, le bouton reste désactivé. Attendu : dashboard ; observé : écran de connexion, AUTH-409. Nous n'avons pas pu le reproduire sur Firefox 135.",
+  lazy: "Safari 18.2 : déconnexion puis reconnexion, bouton désactivé 2 fois sur 10. attendu dashboard, obtenu écran de connexion (AUTH-409). pas reproduit sur Firefox 135"
+};
+examples.design.fr = {
+  source: "Ce design améliore sans accroc l'état vide. Quand aucune ligne n'est renvoyée, masquer le spinner, afficher « Aucun résultat » et garder le focus sur le filtre. Le lecteur d'écran doit annoncer le résultat une seule fois. Aucune étude utilisateur n'a été menée.",
+  direct: "Aucune ligne : masquer le spinner, afficher « Aucun résultat » et garder le focus sur le filtre. Le lecteur d'écran doit annoncer le résultat une seule fois. Aucune étude utilisateur n'a été menée.",
+  warm: "Si aucune ligne n'est renvoyée, masquons le spinner, affichons « Aucun résultat » et gardons le focus sur le filtre. Le lecteur d'écran doit annoncer le résultat une seule fois. Nous n'avons pas mené d'étude utilisateur.",
+  lazy: "aucune ligne : retirer le spinner, afficher « Aucun résultat », focus sur le filtre. lecteur d'écran une seule annonce. pas d'étude utilisateur"
+};
+examples.lead.fr = {
+  source: "Il convient de noter que nous devrions conserver l'ancienne API pour cette version. Deux clients l'utilisent encore. Marta est responsable de la migration. Décider de la suppression après leur prochain déploiement ; aucune date n'a été fixée.",
+  direct: "Conserver l'ancienne API pour cette version. Deux clients l'utilisent encore. Marta est responsable de la migration. Décider de la suppression après leur prochain déploiement ; aucune date n'a été fixée.",
+  warm: "Gardons l'ancienne API pour cette version : deux clients l'utilisent encore. Marta est responsable de la migration. Nous pourrons décider de la suppression après leur prochain déploiement ; aucune date n'a été fixée.",
+  lazy: "ancienne API gardée pour cette version, deux clients l'utilisent encore. Marta gère la migration. décider après leur prochain déploiement, pas de date"
+};
+examples.developer.nl = {
+  source: "Bedankt voor de uitgebreide review! Ik heb het probleem met de lock naadloos opgelost. De aanroeper houdt de lock al vast, dus deze lock is overbodig. De wijziging is niet getest.",
+  direct: "Verwijder deze lock: de aanroeper houdt hem al vast. De wijziging is niet getest.",
+  warm: "Dank voor het nakijken van de lock. De aanroeper houdt hem al vast, dus deze kan weg. De wijziging is nog niet getest.",
+  lazy: "deze lock kan weg, de aanroeper heeft hem al. nog niet getest"
+};
+examples.qa.nl = {
+  source: "We hebben de login uitgebreid getest. Safari 18.2: uitloggen en opnieuw inloggen. In 2 van de 10 pogingen blijft de knop uitgeschakeld. Verwacht: dashboard. Werkelijk: inlogscherm, AUTH-409. Niet gereproduceerd in Firefox 135.",
+  direct: "Safari 18.2: uitloggen en opnieuw inloggen. In 2 van de 10 pogingen blijft de knop uitgeschakeld. Verwacht: dashboard; werkelijk: inlogscherm, AUTH-409. Niet gereproduceerd in Firefox 135.",
+  warm: "We hebben inloggen in Safari 18.2 bekeken: uitloggen en opnieuw inloggen. In 2 van de 10 pogingen blijft de knop uitgeschakeld. Verwacht: dashboard; werkelijk: inlogscherm, AUTH-409. In Firefox 135 konden we het niet reproduceren.",
+  lazy: "Safari 18.2: uitloggen en weer inloggen, knop blijft 2/10 keer uitgeschakeld. verwacht dashboard, maar inlogscherm (AUTH-409). niet gereproduceerd in Firefox 135"
+};
+examples.design.nl = {
+  source: "Dit ontwerp verbetert de lege toestand naadloos. Als er geen rijen terugkomen, verberg de spinner, toon 'Geen resultaten' en houd de focus op het filter. De schermlezer moet het resultaat één keer aankondigen. Er is geen gebruikersonderzoek gedaan.",
+  direct: "Geen rijen: verberg de spinner, toon 'Geen resultaten' en houd de focus op het filter. De schermlezer moet het resultaat één keer aankondigen. Er is geen gebruikersonderzoek gedaan.",
+  warm: "Als er geen rijen zijn, laten we de spinner verbergen, 'Geen resultaten' tonen en de focus op het filter houden. De schermlezer moet het resultaat één keer aankondigen. We hebben geen gebruikersonderzoek gedaan.",
+  lazy: "geen rijen: spinner weg, 'Geen resultaten' tonen, focus blijft op het filter. schermlezer meldt het één keer. geen gebruikersonderzoek"
+};
+examples.lead.nl = {
+  source: "Het is goed om te vermelden dat we de oude API voor deze release in zijn geheel moeten behouden. Twee clients gebruiken hem nog. Marta is verantwoordelijk voor de migratie. Beslis na hun volgende deployment over verwijderen; er is geen datum afgesproken.",
+  direct: "Behoud de oude API voor deze release. Twee clients gebruiken hem nog. Marta is verantwoordelijk voor de migratie. Beslis na hun volgende deployment over verwijderen; er is geen datum afgesproken.",
+  warm: "Laten we de oude API voor deze release behouden: twee clients gebruiken hem nog. Marta is verantwoordelijk voor de migratie. Na hun volgende deployment kunnen we over verwijderen beslissen; er is nog geen datum afgesproken.",
+  lazy: "oude API blijft deze release, twee clients gebruiken hem nog. Marta doet de migratie. na hun volgende deployment beslissen over verwijderen, nog geen datum"
+};
+examples.developer.fi = {
+  source: "Kiitos kattavasta katselmoinnista! Olen ratkaissut lukitusongelman saumattomasti. Kutsuja pitää lukkoa jo hallussaan, joten tämä lukko on turha. Muutosta ei ole testattu.",
+  direct: "Poista tämä lukko: kutsujalla on se jo hallussaan. Muutosta ei ole testattu.",
+  warm: "Kiitos, että tarkistit lukon. Kutsuja pitää sitä jo hallussaan, joten voimme poistaa tämän. Muutosta ei ole vielä testattu.",
+  lazy: "tämä lukko pois, kutsujalla on se jo. ei vielä testattu"
+};
+examples.qa.fi = {
+  source: "Testasimme kirjautumisen kattavasti. Safari 18.2: kirjaudu ulos ja sitten takaisin sisään. Painike jää pois käytöstä 2/10 yrityksessä. Odotettu: dashboard. Toteutunut: kirjautumisnäkymä, AUTH-409. Ei toistunut Firefox 135:ssä.",
+  direct: "Safari 18.2: kirjaudu ulos ja sitten takaisin sisään. Painike jää pois käytöstä 2/10 yrityksessä. Odotettu: dashboard; toteutunut: kirjautumisnäkymä, AUTH-409. Ei toistunut Firefox 135:ssä.",
+  warm: "Tarkistimme kirjautumisen Safari 18.2:ssa: kirjaudu ulos ja takaisin sisään. Painike jää pois käytöstä 2/10 yrityksessä. Odotettu: dashboard; toteutunut: kirjautumisnäkymä, AUTH-409. Emme saaneet virhettä toistumaan Firefox 135:ssä.",
+  lazy: "Safari 18.2: ulos ja takaisin sisään, painike jää pois käytöstä 2/10 kertaa. odotettu dashboard, tuli kirjautumisnäkymä (AUTH-409). ei toistunut Firefox 135:ssä"
+};
+examples.design.fi = {
+  source: "Tämä suunnittelu parantaa tyhjää tilaa saumattomasti. Kun rivejä ei tule, piilota latausanimaatio, näytä 'Ei tuloksia' ja pidä kohdistus suodattimessa. Ruudunlukijan pitäisi ilmoittaa tulos kerran. Käyttäjätutkimusta ei tehty.",
+  direct: "Ei rivejä: piilota latausanimaatio, näytä 'Ei tuloksia' ja pidä kohdistus suodattimessa. Ruudunlukija ilmoittaa tuloksen kerran. Käyttäjätutkimusta ei tehty.",
+  warm: "Kun rivejä ei tule, piilotetaan latausanimaatio, näytetään 'Ei tuloksia' ja pidetään kohdistus suodattimessa. Ruudunlukija ilmoittaa tuloksen kerran. Käyttäjätutkimusta ei ole tehty.",
+  lazy: "ei rivejä: latausanimaatio pois, 'Ei tuloksia' näkyviin, kohdistus suodattimessa. ruudunlukija ilmoittaa kerran. ei käyttäjätutkimusta"
+};
+examples.lead.fi = {
+  source: "On syytä huomata, että vanha API pitäisi säilyttää kokonaisvaltaisesti tässä julkaisussa. Kaksi asiakasohjelmaa käyttää sitä yhä. Marta vastaa migraatiosta. Päätetään poistamisesta niiden seuraavan käyttöönoton jälkeen; poistopäivää ei ole sovittu.",
+  direct: "Säilytä vanha API tässä julkaisussa. Kaksi asiakasohjelmaa käyttää sitä yhä. Marta vastaa migraatiosta. Päätä poistamisesta niiden seuraavan käyttöönoton jälkeen; päivää ei ole sovittu.",
+  warm: "Pidetään vanha API tässä julkaisussa: kaksi asiakasohjelmaa käyttää sitä yhä. Marta vastaa migraatiosta. Voimme päättää poistamisesta niiden seuraavan käyttöönoton jälkeen; päivää ei ole vielä sovittu.",
+  lazy: "vanha API pysyy tässä julkaisussa, kaksi asiakasohjelmaa käyttää sitä vielä. Marta hoitaa migraation. poistosta päätös niiden seuraavan käyttöönoton jälkeen, päivää ei sovittu"
 };
 const role = document.getElementById('role'), tone = document.getElementById('tone'), language = document.getElementById('language');
-function render(){const example=examples[role.value][language.value];document.getElementById('source').textContent=example.source;document.getElementById('result').textContent=example[tone.value];document.documentElement.lang=language.value;}
+function render(){const example=examples[role.value][language.value];const source=document.getElementById('source'),result=document.getElementById('result');source.textContent=example.source;result.textContent=example[tone.value];source.lang=language.value;result.lang=language.value;}
 [role,tone,language].forEach(control=>control.addEventListener('change',render));render();
 </script></body></html>

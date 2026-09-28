@@ -154,6 +154,26 @@ def test_voice_omits_language_when_auto(project):
     assert "Default language" not in profile.resolve(project, {}).voice()
 
 
+@pytest.mark.parametrize("setting", ["preset: lazy", "tone: lazy"])
+def test_lazy_voice_leaves_formatting_and_punctuation_alone(project, setting):
+    write(project / ".unwordy.md", f"---\n{setting}\n---\n")
+    resolved = profile.resolve(project, {})
+    assert resolved.settings["rule.s1"] == "off"
+    assert resolved.settings["rule.s5"] == "off"
+    assert "Prefer commas, colons" not in resolved.voice()
+    assert "Preferred limits" not in resolved.voice()
+    assert "facts" in resolved.voice()
+
+
+def test_lazy_defaults_can_be_overridden(project):
+    write(project / ".unwordy.md", "---\ntone: lazy\nrule.S1: warn\nrule.S5: warn\n---\n")
+    resolved = profile.resolve(project, {})
+    assert resolved.settings["rule.s1"] == "warn"
+    assert resolved.settings["rule.s5"] == "warn"
+    assert "Prefer commas, colons" in resolved.voice()
+    assert "Preferred limits" in resolved.voice()
+
+
 def test_disabled_profile(project):
     write(project / ".unwordy.md", "---\nenabled: false\n---\n")
     assert profile.resolve(project, {}).enabled is False

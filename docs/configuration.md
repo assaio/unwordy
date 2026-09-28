@@ -39,7 +39,7 @@ enabled: true
 |---|---|
 | preset | lazy, senior, qa, lead, formal, custom |
 | role | auto, developer, qa, design, lead |
-| tone | auto, neutral, direct, warm, formal |
+| tone | auto, neutral, direct, warm, formal, lazy |
 | language | auto or a language requested for replies/tracker text |
 | strict | warn, block, off for heuristics |
 | attribution | block, warn, allow; also `<surface>.attribution` |
@@ -50,8 +50,14 @@ enabled: true
 Surfaces: commit, pr, issue, comment, code, docs, reply. Limits currently apply
 to commit, PR, issue and comment messages; reply checks have separate S7 logic.
 `banned_words` replaces the built-in English/Polish/German list. Disabling S1
-allows personal dashes without a conflicting session instruction. Explicit role refines a preset; explicit tone replaces built-in tone prose
-while retaining a custom body; auto uses QA/lead role for those presets, developer otherwise.
+allows personal dashes without a conflicting session instruction. Explicit role
+refines a preset; explicit tone replaces built-in tone prose while retaining a
+custom body. Auto uses QA/lead role for those presets, developer otherwise.
+
+`preset: lazy` or `tone: lazy` keeps fragments, lowercase and casual punctuation.
+It turns off S1 punctuation and S5 length/format suggestions by default. Use
+`rule.S1: warn` or `rule.S5: warn` to restore either check. Required templates,
+disclosure, technical facts and test evidence still apply.
 
 Unknown keys, invalid enums, unknown rule IDs, duplicate entries and invalid
 limits are diagnosed. `doctor`, `voice` and `check` fail with exit 2; hooks pause

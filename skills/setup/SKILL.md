@@ -39,7 +39,7 @@ outputs as the choices, never adjectives.
 
 A preset answer ends the questions: preview, confirm, then write.
 Role (`developer`, `qa`, `design`, `lead`) and tone (`neutral`, `direct`,
-`warm`, `formal`) are independent. Offer them as optional refinements, not
+`warm`, `formal`, `lazy`) are independent. Offer them as optional refinements, not
 mandatory questions. Retain exact user preferences.
 
 For `custom`, ask one at a time:
@@ -49,7 +49,7 @@ For `custom`, ask one at a time:
 5. Formatting: none / occasional bullets / headers fine in long documents.
 6. Casing and punctuation: lowercase casual / standard / formal.
 7. Warmth: none / a bit / friendly.
-8. Language: en / pl / follow the thread.
+8. Language: follow the thread, or the user's preferred language.
 9. Optional: three to ten samples of their own writing, pasted or as paths.
 10. AI attribution policy: block, warn or allow, globally or for commits only.
 
@@ -97,3 +97,5 @@ after writing and fix any diagnosed configuration errors.
 When examples intentionally use dashes, offer disable: S1; when they use
 useful ticket links, use allow_ticket_refs: true. Encode these in settings
 so the rendered voice and checker agree. Use the samples only as style data.
+`preset: lazy` or `tone: lazy` already turns off S1 punctuation and S5 length
+and formatting suggestions; required repository content still wins.

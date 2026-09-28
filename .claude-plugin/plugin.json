@@ -1,6 +1,6 @@
 {
   "name": "unwordy",
-  "version": "0.4.1",
+  "version": "0.5.0",
   "description": "Personal and team writing profiles for coding agents. Preserve facts and repository conventions in commits, PRs, reviews, QA reports and design handoffs; local checks flag filler.",
   "author": {
     "name": "assaio",
