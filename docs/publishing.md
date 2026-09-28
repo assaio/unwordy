@@ -1,6 +1,6 @@
 # Directory submissions
 
-Public package: unwordy 0.4.0, MIT, https://github.com/assaio/unwordy.
+Public package: unwordy 0.4.1, MIT, https://github.com/assaio/unwordy.
 Demo: https://assaio.github.io/unwordy/. Full and standalone ZIPs plus checksums
 are attached to the GitHub release. Do not claim live Codex/Cursor enforcement.
 

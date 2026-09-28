@@ -1,5 +1,11 @@
 # Changelog
 
+## v0.4.1
+
+- Lead the standalone skill with its purpose and a concrete QA example on
+  directory pages. Move profile settings to a separate reference for agents.
+- Use the short skill name in Codex's interface metadata.
+
 ## v0.4.0
 
 - Render voice from the active profile, with independent role and tone. Add QA,
