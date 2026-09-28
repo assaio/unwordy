@@ -1,5 +1,15 @@
 # Changelog
 
+## v0.5.1
+
+- Keep the standalone skill's writing, profile and setup guidance in SKILL.md,
+  so globally installed Claude Code skills do not need to read extra files
+  outside the project during ordinary use.
+- Stop the plugin's write skill from loading optional examples on every use.
+- Explain standalone versus plugin setup commands, personal and team profile
+  paths, narrow read permissions and updating an older global installation in
+  the README, configuration guide and demo.
+
 ## v0.5.0
 
 - Add `tone: lazy` alongside the existing lazy preset. Both accept fragments,

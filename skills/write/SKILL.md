@@ -38,8 +38,5 @@ Respect disabled rules and per-surface limits. Required content wins over brevit
 - Replies: answer first, then enough context. Preserve intentional warmth, casing
   and punctuation from the profile. Length follows the reader's task.
 
-Read [references/examples.md](references/examples.md) for surface examples.
-Read [references/roles.md](references/roles.md) for QA, design or Polish examples.
-
 Before sending, check that shortening did not lose a fact, qualification or
 required section. Do not change technical strings, quotes or links for style.

@@ -63,6 +63,18 @@ npx skills add assaio/unwordy --skill unwordy
 The standalone `unwordy` skill reads the same profile and covers dev, QA,
 design and decision messages. It has no plugin paths or sibling-skill dependency.
 It guides the model; this installation does not install Python checks or hooks.
+For a global Claude Code installation, add `--global --agent claude-code` to
+the install command. Then type:
+
+```text
+/unwordy Help me set up my personal writing style. Preview it before saving.
+```
+
+The standalone skill has no `/unwordy:init` or `/unwordy:setup` commands; those
+come with the full plugin. A personal profile is saved to
+`~/.config/unwordy/style.md`, or `$XDG_CONFIG_HOME/unwordy/style.md`; a team
+profile goes in the repository's `.unwordy.md`. Installing the skill alone
+does not create a profile. See [configuration](docs/configuration.md#start-here).
 Read the [host matrix](docs/compatibility.md) for what each route supplies.
 
 ## Check independently of the agent

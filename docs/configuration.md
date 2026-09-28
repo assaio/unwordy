@@ -1,5 +1,35 @@
 # Profiles and local checks
 
+## Start here
+
+The full Claude Code plugin provides `/unwordy:init` to build a profile from
+selected writing examples and `/unwordy:setup lazy` for a quick preset. These
+commands are installed with the plugin, not with the standalone skill.
+
+If you installed only the global `unwordy` skill in Claude Code, run:
+
+```text
+/unwordy Help me set up my personal writing style. Ask about my role and tone, show a preview, then save it after I approve.
+```
+
+For a shared project profile, ask for “a team profile for this repository”
+instead. Claude Code also accepts ordinary language such as “Use unwordy to
+configure my style.” A personal profile is stored at
+`~/.config/unwordy/style.md` (or `$XDG_CONFIG_HOME/unwordy/style.md`); a team
+profile is `.unwordy.md` at the repository root. A global skill installation
+does not create either profile by itself.
+
+The standalone skill's own `SKILL.md` already contains its instructions. It
+should not read files under `~/.claude/skills/unwordy/references/` during normal
+use. If an older installation asks to read one of those files outside the
+project, update it with `npx skills update unwordy --global` or reinstall from
+GitHub. There is no need to grant broad access to files outside the project
+for that read. Claude Code may still ask before reading or saving an actual
+personal profile under `~/.config/unwordy/`; that is a separate permission
+decision. If desired, add only `Read(~/.config/unwordy/style.md)` to
+`permissions.allow` in `~/.claude/settings.json`; keep existing entries. A
+custom `$XDG_CONFIG_HOME` or `$UNWORDY_STYLE` path needs its own narrow rule.
+
 ## Resolution and precedence
 
 The first existing profile wins: `$UNWORDY_STYLE`, nearest `.unwordy.md` up to
