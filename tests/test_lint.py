@@ -175,6 +175,47 @@ def test_inline_code_and_fences_are_not_linted(settings):
     assert lint.lint_message(message, settings) == []
 
 
+@pytest.mark.parametrize("text", [
+    'The exact error is "robust parser unavailable — Generated with Claude".',
+    "The reporter wrote ‘comprehensive — Generated with Claude’.",
+    "See [the upstream report](https://example.com/robust/).",
+    "See https://example.com/comprehensive?mode=robust.",
+])
+def test_exact_quotes_and_urls_are_preserved(text, settings):
+    assert lint.lint_message(extract.Message("comment", "test", "", text), settings) == []
+
+
+def test_filler_outside_a_quote_is_still_checked(settings):
+    findings = lint.lint_message(extract.Message("comment", "test", "",
+                                                'We leverage the error "robust failure".'), settings)
+    assert [f.rule for f in findings] == ["S2"]
+    assert "'leverage'" in findings[0].reason
+
+
+def test_robot_in_a_message_is_not_an_attribution_marker(settings):
+    assert lint.lint_message(extract.Message("comment", "test", "", "Deploy the 🤖 robot control service."), settings) == []
+    findings = lint.lint_message(extract.Message("comment", "test", "", "Retry delivery.\n\n🤖"), settings)
+    assert [f.rule for f in findings] == ["H1"]
+
+
+def test_code_comment_preserves_literal_error_and_identifier(project, settings):
+    assert code_findings(project, "a.py", '# Preserve the error "robust failure" and `leverage`.\nx = 1\n', settings) == []
+
+
+def test_prose_location_keeps_fences_and_blank_lines(project, settings):
+    text = "Notes\n\n```python\nprint('robust')\n```\n\nWe leverage the cache.\n"
+    change = extract._diff(str(project / "NOTES.md"), "", text)
+    findings = lint.lint_change(change, settings, project)
+    assert [(finding.rule, finding.line) for finding in findings] == [("S2", 7)]
+
+
+def test_collapsed_attribution_keeps_code_surface_and_line(project, settings):
+    change = extract._diff(str(project / "a.py"), "", "x = 1\n# Generated with Claude\n")
+    findings = lint.lint_change(change, dict(settings, **{"code.attribution": "allow"}), project)
+    assert [(f.rule, f.surface, f.line) for f in findings] == [("H1", "code", 2)]
+    assert lint.action(findings[0], dict(settings, **{"code.attribution": "allow"})) == "ignore"
+
+
 def test_mcp_field_lints_text_and_structure(settings):
     findings = [f.rule for f in lint.lint_field("body", "- **A:** x\n" * 5, settings)]
     assert "S5e" in findings
@@ -366,3 +407,17 @@ def test_repo_conventions_skip_subject_length_and_opener_for_commits(settings):
     assert [f.rule for f in lint.lint_message(message, settings, conventions=True)] == ["S6a"]
     pr = extract.Message("pr", "gh pr create", "x" * 80, body)
     assert [f.rule for f in lint.lint_message(pr, settings, conventions=True)] == ["S5a", "S6a", "S6c"]
+
+
+@pytest.mark.parametrize("title, body, expected", [
+    ("This commit adds retry", "", 1),
+    ("Fix retry", "\nThis commit adds retries.", 3),
+])
+def test_opener_location_points_to_the_original_line(settings, title, body, expected):
+    findings = lint.lint_message(extract.Message("commit", "git commit", title, body), settings)
+    assert [(f.rule, f.line, f.surface) for f in findings] == [("S6c", expected, "commit")]
+
+
+def test_standalone_robot_footer_location(settings):
+    findings = lint.lint_message(extract.Message("commit", "git commit", "Fix retry", "🤖"), settings)
+    assert [(f.rule, f.line) for f in findings] == [("H1", 2)]

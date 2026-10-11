@@ -137,10 +137,14 @@ def _stop(payload, prof, cwd):
     question, transcript_reply = extract.read_transcript_tail(payload.get("transcript_path") or "")
     reply = payload.get("last_assistant_message")
     reply = reply if isinstance(reply, str) and reply.strip() else transcript_reply
-    findings = [f for f in lint.lint_reply(reply, question, prof.settings) if not f.disabled(prof.settings)]
-    if not findings:
-        return None
-    return {"decision": "block", "reason": "\n".join(str(f) for f in findings)}
+    findings = lint.lint_reply(reply, question, prof.settings)
+    blocked = [f for f in findings if lint.action(f, prof.settings) == "block"]
+    warnings = [f for f in findings if lint.action(f, prof.settings) == "warn"]
+    if blocked:
+        return {"decision": "block", "reason": "\n".join(str(f) for f in blocked + warnings)}
+    if warnings:
+        return {"systemMessage": "\n".join(str(f) for f in warnings)}
+    return None
 
 
 def _decide(findings, prof, payload):

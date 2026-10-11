@@ -139,11 +139,29 @@ class Profile:
             lines.append("Preferred limits, subject to required repository content: " + "; ".join(limits) + ".")
         if active("S6a"):
             lines.append("Use the required PR template. Omit unused scaffolding when no template requires it.")
-        if "H1" not in settings["disable"] and settings.get("rule.h1") != "off":
-            attribution = [f"{key} {value}" for key, value in settings.items()
-                           if key == "attribution" or key.endswith(".attribution")]
+        if active("H1") or any(self.attribution(surface) != "allow" for surface in SURFACES):
+            attribution = [f"{surface} {self.attribution(surface)}" for surface in SURFACES]
             lines.append("Attribution policy: " + "; ".join(attribution) + ". Required repository disclosure wins.")
         return lines
+
+    def attribution(self, surface):
+        from . import lint
+
+        effect = lint.action(lint.Finding("H1", "", surface=surface), self.settings)
+        return "allow" if effect == "ignore" else effect
+
+    def explain(self):
+        from . import lint
+
+        return {
+            "profile": str(self.path) if self.path else "built-in senior",
+            "enabled": self.enabled,
+            "settings": self.settings,
+            "rules": {rule: lint.action(lint.Finding(rule, ""), self.settings)
+                      for rule in sorted(RULE_IDS) if rule not in ("H2", "H4", "S5", "S6", "S7")},
+            "attribution": {surface: self.attribution(surface) for surface in SURFACES},
+            "errors": self.diagnostics,
+        }
 
 
 def parse(text):

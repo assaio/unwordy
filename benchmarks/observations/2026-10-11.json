@@ -1,0 +1,140 @@
+{
+  "date": "2026-10-11",
+  "host": "Claude Code",
+  "host_version": "2.1.296",
+  "plugin_version": "0.6.0",
+  "runs_per_case_per_arm": 1,
+  "model": "host default; exact model version was not captured in the evaluator report",
+  "valid_full_quality_comparison": false,
+  "pilot": {
+    "scope": "code-comment only",
+    "runs": [
+      {
+        "case": "code-comment",
+        "arm": "with",
+        "reported_score": 1,
+        "reported_pass": true,
+        "error": null,
+        "failed_graders": []
+      },
+      {
+        "case": "code-comment",
+        "arm": "without",
+        "reported_score": 1,
+        "reported_pass": true,
+        "error": null,
+        "failed_graders": []
+      }
+    ],
+    "limitation": "Both arms passed; a single case does not establish improvement."
+  },
+  "exploratory": {
+    "status": "diagnostic only; graders were revised after this run",
+    "runs": [
+      {
+        "case": "code-comment",
+        "arm": "with",
+        "reported_score": 1,
+        "reported_pass": true,
+        "error": null,
+        "failed_graders": []
+      },
+      {
+        "case": "code-comment",
+        "arm": "without",
+        "reported_score": 1,
+        "reported_pass": true,
+        "error": null,
+        "failed_graders": []
+      },
+      {
+        "case": "commit-message",
+        "arm": "with",
+        "reported_score": 1,
+        "reported_pass": true,
+        "error": null,
+        "failed_graders": [
+          "write-skill-fired"
+        ]
+      },
+      {
+        "case": "commit-message",
+        "arm": "without",
+        "reported_score": 1,
+        "reported_pass": true,
+        "error": null,
+        "failed_graders": []
+      },
+      {
+        "case": "pr-body",
+        "arm": "with",
+        "reported_score": 0.875,
+        "reported_pass": false,
+        "error": null,
+        "failed_graders": [
+          "retains-risk-and-idempotency",
+          "write-skill-fired"
+        ]
+      },
+      {
+        "case": "pr-body",
+        "arm": "without",
+        "reported_score": 0.75,
+        "reported_pass": false,
+        "error": null,
+        "failed_graders": [
+          "no-template-headers",
+          "retains-risk-and-idempotency"
+        ]
+      },
+      {
+        "case": "reply",
+        "arm": "with",
+        "reported_score": 0.8,
+        "reported_pass": false,
+        "error": null,
+        "failed_graders": [
+          "under-thirteen-lines"
+        ]
+      },
+      {
+        "case": "reply",
+        "arm": "without",
+        "reported_score": 1,
+        "reported_pass": true,
+        "error": null,
+        "failed_graders": []
+      },
+      {
+        "case": "tracker-comment",
+        "arm": "with",
+        "reported_score": 1,
+        "reported_pass": true,
+        "error": null,
+        "failed_graders": [
+          "write-skill-fired"
+        ]
+      },
+      {
+        "case": "tracker-comment",
+        "arm": "without",
+        "reported_score": 1,
+        "reported_pass": true,
+        "error": null,
+        "failed_graders": []
+      }
+    ],
+    "corrections": [
+      "Supply duplicate-delivery risk in the PR source before requiring it in the output.",
+      "Count nonempty reply and tracker lines, consistently with the local checker.",
+      "Recognize either bundled writing skill in the optional invocation indicator."
+    ],
+    "limitation": "The host removed temporary response traces; final outputs cannot be reviewed."
+  },
+  "corrected": {
+    "status": "all ten runs failed on the account session limit",
+    "failed_runs": 10,
+    "limitation": "Scores on an account error are invalid quality measurements."
+  },
+  "human_ratings_collected": false
+}

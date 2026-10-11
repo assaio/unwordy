@@ -1,186 +1,190 @@
 # unwordy
 
-**Clear commits, PRs and reviews in your team's voice.**
+**Commits, PRs and reviews in your team's voice.**
 
-unwordy helps coding agents follow your team's writing conventions in commits,
-pull requests, code comments and work replies. Use a preset or a profile from
-selected examples of your own writing. Choose a role and tone independently.
-Local checks flag filler and repeated explanations; host hooks can intercept
-matching writes. Required templates, disclosure and useful evidence stay.
+Give your coding agent a writing style it can follow: direct, warm, formal or
+as casual as a note to a teammate. unwordy preserves supplied facts, uncertainty
+and test scope while cutting filler and repeated explanations. Required
+repository templates and disclosure take precedence.
+
+Start with a portable skill. Add a shared profile for your team, or use the
+Python checker and host hooks to flag supported writes.
 
 [Try the demo](https://assaio.github.io/unwordy/) ·
-[Configuration](docs/configuration.md) · [Rules](docs/rules.md) ·
-[Host support](docs/compatibility.md) · [Evaluation](benchmarks/README.md)
+[Install a release](https://github.com/assaio/unwordy/releases/latest) ·
+[Configuration](docs/configuration.md) · [Host support](docs/compatibility.md)
 
-```diff
-- This comprehensive update seamlessly improves delivery reliability.
-- We added retry logic and extensively tested the implementation.
-+ Retry delivery three times: 1s, 2s, 4s. The receiver returns 502 after deploys.
-+ Risk: duplicate delivery; the receiver is idempotent on event id.
-+ Tested a forced 502 in staging. Production was not tested.
-```
+## See the difference
 
-The source notes supplied the retry schedule, risk and exact test scope.
-A rewrite must preserve those facts; it cannot invent evidence to sound specific.
+Input, including all the facts used below:
 
-## Start with your agent
+> This comprehensive update seamlessly improves webhook delivery. We retry
+> three times, after 1s, 2s and 4s, because the receiver returns 502 after
+> deploys. Duplicate delivery is a risk; the receiver is idempotent on event id.
+> We tested a forced 502 in staging. Production was not tested.
 
-### Claude Code plugin
+Ready to paste:
 
 ```text
-/plugin marketplace add assaio/unwordy
-/plugin install unwordy@unwordy
-/unwordy:init
+Retry webhook delivery three times: 1s, 2s, 4s. The receiver returns 502
+after deploys.
+
+Risk: duplicate delivery; the receiver is idempotent on event id.
+Tested a forced 502 in staging. Production was not tested.
 ```
 
-`init` previews a personal or team profile before saving. For a direct preset
-switch use `/unwordy:setup senior`; for a team use
-`/unwordy:setup --project team-design`. The next session loads the voice.
+The same change can be concise or warm without losing its evidence. Missing
+facts stay missing. Already useful text can stay unchanged.
+[More examples](skills/write/references/examples.md) include incomplete bug
+reports, required templates and code comments.
 
-### Codex plugin
-
-```sh
-codex plugin marketplace add assaio/unwordy
-codex plugin add unwordy@unwordy
-```
-
-Review and trust the hook definition in `/hooks`. **Live Codex hook enforcement
-is not confirmed.** Use the checker below as the host-independent route.
-
-### Cursor plugin
-
-Until a marketplace listing is approved, copy this repository to
-`~/.cursor/plugins/local/unwordy` and reload Cursor. Local plugin imports must
-be allowed by your organization. **Live Cursor hook enforcement is not confirmed.**
-Cursor pre-tool warnings are not guaranteed to reach the agent; use the checker.
-
-### Skill only, including other agents
+## Try it on your next PR
 
 ```sh
 npx skills add assaio/unwordy --skill unwordy
 ```
 
-The standalone `unwordy` skill reads the same profile and covers dev, QA,
-design and decision messages. It has no plugin paths or sibling-skill dependency.
-It guides the model; this installation does not install Python checks or hooks.
-For a global Claude Code installation, add `--global --agent claude-code` to
-the install command. Then type:
+Then ask your agent:
+
+```text
+Use unwordy to rewrite this PR description. Keep the risk, exact errors
+and what was actually tested.
+```
+
+The standalone skill works without Python, a plugin or sibling skills.
+It guides the model; it does not install the checker or hooks.
+
+For a personal Claude Code installation across projects, add
+`--global --agent claude-code`. To set up your voice, type:
 
 ```text
 /unwordy Help me set up my personal writing style. Preview it before saving.
 ```
 
-The standalone skill has no `/unwordy:init` or `/unwordy:setup` commands; those
-come with the full plugin. A personal profile is saved to
-`~/.config/unwordy/style.md`, or `$XDG_CONFIG_HOME/unwordy/style.md`; a team
-profile goes in the repository's `.unwordy.md`. Installing the skill alone
-does not create a profile. See [configuration](docs/configuration.md#start-here).
-Read the [host matrix](docs/compatibility.md) for what each route supplies.
+A personal profile lives at `~/.config/unwordy/style.md`, or under
+`$XDG_CONFIG_HOME`; a team profile is `.unwordy.md` in the repository.
+Installation does not create a profile automatically.
+[Setup and permissions](docs/configuration.md#start-here).
 
-## Check independently of the agent
+## Install the full plugin
 
-Python 3.9+, standard library only. From a checkout:
+| Host | Install |
+|---|---|
+| Claude Code | `/plugin marketplace add assaio/unwordy`, then `/plugin install unwordy@unwordy` |
+| Codex | `codex plugin marketplace add assaio/unwordy`, then `codex plugin add unwordy@unwordy` |
+| Cursor | Copy the checkout to `~/.cursor/plugins/local/unwordy` and reload, if your organization allows local plugins |
 
-```sh
-sh bin/unwordy doctor
-sh bin/unwordy check --staged
-sh bin/unwordy check --message-file .git/COMMIT_EDITMSG --surface commit
-sh bin/unwordy check --diff origin/main --commits origin/main
-sh bin/unwordy voice
-```
+The full plugin adds `init`, `setup`, `rewrite` and `sync`, plus local checks
+and hook assets. In Claude Code, start with `/unwordy:init`; use
+`/unwordy:setup lazy` for a preset or `/unwordy:setup --project team-design`
+for a team template. The next session loads the voice.
 
-Use an absolute path to `bin/unwordy` from another repository. `--json` returns
-rule IDs, effects and targets. Exit codes: 0 clean or warning, 1 block, 2 error.
-`--fail-on-warn` also exits 1 for warnings. The checker reads tracked diffs or
-the index; untracked files are not included. A [CI example](docs/configuration.md#ci)
-checks a commit range without relying on a host hook.
+The standalone skill has no `/unwordy:init` or `/unwordy:setup` commands.
+Review and trust Codex hook definitions in `/hooks`. Codex and Cursor adapters
+have fixture coverage; live enforcement remains unconfirmed. Cursor pre-tool
+warnings are not guaranteed to reach the agent. See the
+[dated host matrix](docs/compatibility.md).
 
-## Your role, your tone
+## Make it sound like you
+
+Role and tone are independent. This profile keeps a developer's facts in a
+casual voice:
 
 ```markdown
 ---
 preset: custom
-role: design
-tone: warm
+role: developer
+tone: lazy
 language: auto
 strict: warn
-pr.max_body_lines: 20
-allow_ticket_refs: true
-disable: S1
 ---
-Direct but friendly. Keep useful acknowledgements and occasional dashes.
-Preserve uncertainty, accessibility requirements and implementation constraints.
+Keep lowercase openings and short notes. Preserve useful warmth.
+Keep risk, conditions and exact test scope.
 ```
 
-Write this to `.unwordy.md` for a team, or `~/.config/unwordy/style.md` for
-personal defaults. The first matching profile
-wins: `$UNWORDY_STYLE`, nearest project file up to the git root, global file,
-then built-in `senior`. Repository requirements always win over voice preferences.
+Write it to `.unwordy.md` for the team or the personal profile path above.
+Choose `senior`, `qa`, `lead`, `formal` or `lazy` for a preset.
+A custom body describes your rhythm, casing and punctuation.
 
-| Role | Retain |
+| Role | What the message keeps |
 |---|---|
 | Developer | Reason, risk, test evidence and relevant code location |
 | QA | Reproduction, expected/actual, environment, versions and frequency |
 | Design | UI states, behavior, rationale, accessibility and constraints |
 | Lead | Decision, trade-off, owner and next step when supplied |
 
-Tone is separate: neutral, direct, warm, formal or lazy. The custom body can
-describe personal rhythm, casing and punctuation. Already useful text can stay
-unchanged.
-Choose `preset: lazy` or `tone: lazy` for plain notes with casual punctuation
-and no suggested length or formatting limits. Facts, required templates and
-test evidence still stay. The [demo](https://assaio.github.io/unwordy/) shows
-lazy alongside direct and warm in seven languages.
-The multilingual demo shows model-guided examples. Local word-pattern checks
-are strongest in English, partial in Polish and German, and not localized for
-Spanish, French, Dutch or Finnish.
-See [PL/EN examples](skills/write/references/roles.md),
-[team templates](templates/) and the [profile format](docs/configuration.md).
+Lazy allows fragments and casual punctuation, and turns off S1 punctuation
+and S5 length/format suggestions by default. Explicit rule settings can restore
+them. Required facts and repository sections still stay.
 
-## What makes this useful in a repository
+The first existing profile wins: `$UNWORDY_STYLE`, nearest `.unwordy.md` up
+to the Git root, global profile, then built-in senior. Profiles replace each
+other rather than merge. [Team templates](templates/) and the
+[profile reference](docs/configuration.md) cover limits and rule overrides.
 
-- A shared `.unwordy.md` gives agents the team's voice; `sync` carries it into
-  AGENTS.md or Cursor rules when needed.
-- Required PR templates and disclosure take precedence. The checker recognizes
-  GitHub and GitLab template headings, or `pr_template: respect` for external requirements.
-- Stable rule IDs make each finding explainable and configurable. For example,
-  `rule.H4: off` disables the restating-comment heuristic; `rule.H4: block` opts in.
-- Contract descriptions and standard algorithm steps are preserved. Ticket references
-  and restating heuristics warn by default rather than treating syntax as proof.
-- Known MCP publishing operations apply the same PR/issue/comment policy as shell
-  routes, including titles. Read operations and unrecognized tool names are skipped.
+## Check before you publish
 
-## Limits, evidence and privacy
+Python 3.9+, standard library only. From a checkout:
 
-Regexes do not assess factual correctness or prove naturalness. Hook coverage
-is not a security boundary: unsupported editors and tool routes can bypass it.
-Hard defaults are H1, H2a, H2c and H3. H2b, H2d, H4 and S rules follow `strict`;
-explicit effects and disable lists take precedence. Soft blocks downgrade after
-two denials for the same family and target; hard defaults keep blocking.
+```sh
+sh bin/unwordy doctor
+sh bin/unwordy check --staged --explain
+sh bin/unwordy check --message-file .git/COMMIT_EDITMSG --surface commit
+sh bin/unwordy check --diff origin/main --commits origin/main
+sh bin/unwordy check --explain --json
+sh bin/unwordy voice
+```
 
-`doctor` validates configuration and reports local readiness. It does not claim
-that a host invoked a hook. [Dated compatibility notes](docs/compatibility.md)
-separate fixture tests from observed sessions.
+`--explain` shows the selected profile and effective rule and attribution
+policies. JSON findings include rule ID, effect, target and line when known.
+The checker and `voice` resolve the same profile from your current directory.
 
-The checker makes no network or model calls. `init` and `rewrite` run in your
-existing agent: selected samples are visible to that host/model. Profiles store
-short preferences, not raw writing samples. Local hook state stores denial
-counts and targets; error logs store tracebacks. See [privacy](docs/privacy.md).
+Use an absolute path to `bin/unwordy` from another repository.
+Exit codes: 0 clean or warning, 1 block, 2 error; `--fail-on-warn` makes
+warnings fail too. The checker reads tracked diffs or the index; untracked
+files are not included. [CI example](docs/configuration.md#ci).
 
-`enabled: false` disables a profile, `UNWORDY_OFF=1` disables a checker or hook
-process, and the plugin can be uninstalled through its host. Windows requires WSL.
+Stable rule IDs let you tune a finding: `rule.H4: off` disables the
+restating-comment heuristic; `rule.H4: block` opts in. Required GitHub/GitLab
+PR headings are respected. Literal quotes, code and URLs are protected from
+style patterns. Recognized MCP PR, issue and comment operations use the same
+policy as shell routes; unrelated operations are skipped.
 
-## Help improve it
+## Evidence and limits
+
+The [72-case corpus](benchmarks/README.md) covers PL/EN writing, custom and lazy
+voices, required templates, missing details, protected strings and code.
+Offline checks test bounded literals, case-specific fact relationships and
+Python code preservation. They also report changes to text that should stay.
+Blinded review sheets and rating summaries support human assessment of
+naturalness and voice; no human quality score is claimed without collected
+ratings. [Release evidence](docs/release-evidence.md) records actual checks.
+
+Regexes cannot establish factual correctness or prove that text sounds natural.
+The checker makes no network or model calls. Hook coverage depends on the host
+and supported tool route. Unsupported editors and arbitrary scripts can bypass
+checks.
+
+Hard defaults are H1, H2a, H2c and H3. Other patterns follow `strict`;
+explicit effects and disable lists take precedence, including Stop rules.
+Soft pre-tool blocks downgrade after two denials for the same family and target.
+
+The [seven-language demo](https://assaio.github.io/unwordy/) contains illustrative
+outputs. Word-pattern coverage is strongest in English, partial in Polish and
+German, and not localized for Spanish, French, Dutch or Finnish.
+
+Setup and rewriting use your existing host/model. Profiles store short
+preferences rather than raw samples; hook state stores denial counts and
+targets. [Privacy and stored data](docs/privacy.md).
+`enabled: false` disables unwordy preferences and checks; `UNWORDY_OFF=1`
+disables the checker or hook process. Windows requires WSL.
+
+## Help shape the next release
 
 Report a [false positive](https://github.com/assaio/unwordy/issues/new?template=false-positive.yml)
-with a redacted example and rule ID. Share profiles or workflow feedback in
+with a redacted example and rule ID, or share a profile in
 [Discussions](https://github.com/assaio/unwordy/discussions).
+[CONTRIBUTING.md](CONTRIBUTING.md) covers tests and live smoke checks.
 
-The public [36-case evaluation corpus](benchmarks/README.md) covers dev, QA,
-design and decisions in PL/EN, including clean text and personal voice. Offline
-checks catch missing required literals; blinded human ratings assess naturalness
-and voice. No human quality score is claimed without collected ratings.
-
-[CONTRIBUTING.md](CONTRIBUTING.md) has tests, evals and live smoke checks.
 MIT licensed. Maintainer's sibling project:
 [assaio](https://github.com/assaio/assaio), offline coding-agent cost analytics.

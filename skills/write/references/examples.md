@@ -1,108 +1,100 @@
 # Before and after
 
+These fictional inputs contain every fact used in their rewrites. A rewrite
+can remove filler; it cannot fill gaps with plausible details.
+
 ## Commit message
 
 Before:
 
-```
+```text
 feat: Implement comprehensive retry mechanism for sync worker
 
-This commit adds a robust retry mechanism to the sync worker to handle
-transient failures seamlessly. Changes include:
-
-- Added retry logic with exponential backoff
-- Updated the worker configuration
-- Added unit tests
-
-Co-Authored-By: Claude <noreply@anthropic.com>
+This commit adds retries for the webhook host's 502 responses after deploys.
+We seamlessly retry three times: 1s, 2s, 4s. Then the event id goes to the
+dead letter log. Unit tests were added but not run.
 ```
 
 After:
 
-```
-sync: retry webhook delivery three times
+```text
+feat: retry webhook delivery three times
 
-The webhook host returns 502 for a few seconds after a deploy. Backoff is
-1s, 2s, 4s; after that the event id goes to the dead letter log.
+The webhook host returns 502 after deploys. Backoff is 1s, 2s, 4s;
+after that the event id goes to the dead letter log.
+Unit tests added; not run.
 ```
 
 ## PR body
 
-Before:
+Before, with no required PR template:
 
-```
+```text
 ## Summary
 
-This PR implements a comprehensive retry mechanism for the sync worker.
-
-- **What:** adds retries with exponential backoff
-- **Why:** transient failures were causing data loss
-- **How:** wraps the dispatch call in a retry helper
+This PR implements comprehensive retries for webhook delivery: three times,
+with backoff of 1s, 2s and 4s. The host returns 502 for a few seconds after
+each deploy, and we were dropping those events. Late responses can cause
+duplicate deliveries. The receiver is idempotent on event id; see
+webhook/receiver.go:88.
 
 ## Test plan
 
-- [x] Unit tests pass
-- [x] Manual testing performed
-
-🤖 Generated with Claude Code
+Tested a forced 502 against staging and the unit cases in sync/retry_test.go.
+Production was not tested.
 ```
 
 After:
 
+```text
+Retry webhook delivery three times: 1s, 2s, 4s. The host returns 502 for a
+few seconds after each deploy, and we were dropping those events.
+
+Risk: duplicate deliveries after a late response. The receiver is idempotent
+on event id; see webhook/receiver.go:88.
+
+Tested a forced 502 in staging and the cases in sync/retry_test.go.
+Production was not tested.
 ```
-Retries webhook delivery three times with backoff (1s, 2s, 4s). The host
-returns 502 for a few seconds after every deploy, and we were dropping
-those events.
 
-Risk: duplicate deliveries if the host answered late. The receiver is
-idempotent on event id, see webhook/receiver.go:88.
+When the repository requires Summary and Test plan, keep those headings.
 
-Tested against the staging host with a forced 502 and with the unit tests
-in sync/retry_test.go.
-```
-
-## Issue
+## Issue with missing details
 
 Before:
 
-```
-Bug: The application crashes unexpectedly
-
-When using the sync feature, users may experience a crash in certain
-circumstances. This appears to be related to empty payloads. It would be
-great if this could be addressed.
+```text
+The application crashes unexpectedly during sync. This appears to be related
+to empty payloads, but we have not confirmed the cause. The error, environment
+and frequency are unknown. It would be great if this could be addressed.
 ```
 
 After:
 
+```text
+The application crashes during sync. Empty payloads may be involved; the cause is unconfirmed.
+The error, environment and frequency are unknown.
 ```
-sync worker crashes on an empty webhook body
 
-Steps: post an empty body to /hooks/sync.
-Expected: 400.
-Actual: 500, worker restarts.
-
-    panic: runtime error: index out of range [0] with length 0
-    sync/parse.go:41
-
-v2.4.1, linux/amd64.
-```
+Do not add reproduction steps, HTTP statuses, a stack trace or a version.
 
 ## Tracker or review comment
 
 Before:
 
-```
-Thanks for the detailed review! Great catch on the retry logic. I've gone
-ahead and updated the implementation as requested. Let me know if you have
-any other feedback!
+```text
+Thanks for checking the retry scope. I've comprehensively updated the
+implementation: retry now lives in the dispatcher so the receiver stays pure.
+Only 5xx and connection errors are retried, capped at 3 attempts; configuration
+is in sync.toml:12. This change has not been tested.
 ```
 
-After:
+After, in a warm voice:
 
-```
-Moved the retry into the dispatcher so the receiver stays pure. The cap is
-3 attempts, config in sync.toml:12.
+```text
+Thanks for checking the retry scope. Moved retry into the dispatcher so the
+receiver stays pure. It retries only 5xx and connection errors, capped at
+3 attempts; config is in sync.toml:12. Not tested.
 ```
 
 ## Code comment
@@ -110,11 +102,10 @@ Moved the retry into the dispatcher so the receiver stays pure. The cap is
 Before:
 
 ```python
-# This function processes the payload and returns the parsed data
-# Step 1: Check if payload is empty
-# Updated to handle the empty case as requested in PROJ-142
+# This function processes the payload and returns its data.
 def parse(payload):
-    # Return None if empty
+    # Check if payload is empty.
+    # The host sends an empty body instead of a 404 when an event was deleted.
     if not payload:
         return None
     return payload.get("data")
@@ -124,27 +115,26 @@ After:
 
 ```python
 def parse(payload):
-    # The webhook host sends an empty body instead of a 404.
+    # The host sends an empty body instead of a 404 when an event was deleted.
     if not payload:
         return None
     return payload.get("data")
 ```
 
+The executable code is unchanged. Keep the documented constraint.
+
 ## Reply
 
 Before:
 
-```
-Great question! Let me explain how the retry limit works. The retry limit
-is a configuration option that controls how many times the worker will
-attempt to deliver a webhook before giving up. It's defined in the
-config.toml file under the sync section. By default, it's set to 3
-attempts. Let me know if you'd like me to walk you through the backoff
-calculation as well!
+```text
+Yes. Let me explain how the configurable retry limit works. It is defined as
+sync.retry_limit in config.toml. The default is 3, and accepted values range
+from 1 to 10. Let me know if you'd like a walkthrough!
 ```
 
 After:
 
-```
+```text
 Yes, `sync.retry_limit` in config.toml. Default 3, range 1 to 10.
 ```

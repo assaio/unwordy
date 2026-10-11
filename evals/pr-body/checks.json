@@ -1,0 +1,7 @@
+{
+  "accepted": ["Retry delivery three times: 1s, 2s, 4s. The receiver returns 502 after deploys. Risk: duplicate deliveries; the receiver is idempotent on event id. Tested a forced 502 in staging and sync/retry_test.go."],
+  "rejected": [
+    {"output": "Retry delivery: 4s, 2s, 1s. Receiver returns 502.", "graders": ["retains-schedule.md"]},
+    {"output": "Retry delivery: 11s, 12s, 14s. Receiver returns 502.", "graders": ["retains-schedule.md"]}
+  ]
+}

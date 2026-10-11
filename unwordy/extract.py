@@ -719,11 +719,11 @@ def mcp_surface(tool, tool_input=None):
         return None
     if words & {"comment", "review", "note"}:
         return "comment"
-    if words & {"pr", "pull", "merge"}:
+    if "pr" in words or "request" in words and words & {"pull", "merge"}:
         return "pr"
     if words & {"issue", "ticket"}:
         return "issue"
-    return "comment"
+    return None
 
 
 def mcp_messages(tool, tool_input):

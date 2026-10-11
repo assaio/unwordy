@@ -133,3 +133,10 @@ def test_json_mcp_arguments_and_gh_api_have_the_same_pr_surface():
 def test_quoted_source_is_not_rewritten_by_style_findings():
     msg = extract.Message("comment", "test", "", "> We leverage a robust approach — Generated with Claude.\nThe observed error is `robust_failure`.")
     assert lint.lint_message(msg, dict(profile.DEFAULTS)) == []
+
+
+def test_voice_and_checker_share_effective_attribution(project):
+    prof = configure(project, "rule.H1: warn\ncommit.attribution: block")
+    assert "commit warn" in prof.voice()
+    assert "commit block" not in prof.voice()
+    assert prof.explain()["attribution"]["commit"] == "warn"

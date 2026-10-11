@@ -7,6 +7,8 @@ functions. Tests use pytest; Python 3.9 uses pytest 8. Match nearby test pattern
 python3 -m venv .venv
 .venv/bin/python -m pip install 'pytest>=8,<9'
 .venv/bin/python -m pytest -q
+node scripts/check-evals.mjs
+node scripts/check-demo.mjs
 claude plugin validate --strict .
 claude plugin validate --strict .claude-plugin/plugin.json
 git diff --check
@@ -29,7 +31,10 @@ docs/release-evidence.md, and do not infer enforcement from installation.
 New installed versions are cached; reinstall or start a fresh local-plugin run.
 
 The five existing eval cases use the host model and positive fact graders;
-benchmarks/ has a 36-case corpus and offline completeness/blinded-review tooling.
+benchmarks/ has a 72-case corpus and offline fact/code checks, repeated runs and
+blinded human-review tooling. Test graders with valid output and a concrete
+failure such as swapped facts, lost code or a changed number. Quoted errors,
+URLs and code behavior must survive style changes.
 Run model evals only when intended; keep private samples out of public artifacts.
 See benchmarks/README.md for comparison methodology.
 

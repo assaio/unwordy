@@ -23,15 +23,16 @@ Before: "This design seamlessly streamlines the empty state. Hide the spinner
 when loading ends with no rows, show 'No results', and keep focus on the filter.
 The screen reader should announce the result once. No user study was run."
 
-After: "Empty results: hide the spinner, show 'No results', and keep focus on
+After: "After loading ends with no rows, hide the spinner, show 'No results', and keep focus on
 the filter. Announce the result once to screen readers. No user study was run."
 
-PL: "Brak wyników: ukryj spinner, pokaż ‘Brak wyników’ i pozostaw fokus na filtrze.
+PL: "Po zakończeniu ładowania bez wyników ukryj spinner, pokaż ‘Brak wyników’ i pozostaw fokus na filtrze.
 Czytnik ekranu ma ogłosić wynik raz. Nie przeprowadziliśmy badania z użytkownikami."
 
 ## Review, direct and warm
 
-Source: the caller already holds the lock; the change has not been tested.
+Source: "Thanks for checking the race. Remove this redundant lock: the caller already holds it;
+the change has not been tested."
 
 Direct: "Remove this lock: the caller already holds it. The change is untested."
 Warm: "Thanks for checking the race. The caller already holds this lock, so we

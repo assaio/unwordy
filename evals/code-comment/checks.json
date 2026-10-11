@@ -1,0 +1,7 @@
+{
+  "accepted": ["import json\n\ndef parse(payload):\n    # The host sends an empty body instead of a 404 when an event was deleted.\n    if not payload:\n        return None\n    return json.loads(payload)"],
+  "rejected": [
+    {"output": "# deleted", "graders": ["retains-code.md", "says-why.md"]},
+    {"output": "import json\ndef parse(payload):\n    # The host sends an empty body instead of a 404.\n    if not payload:\n        return True\n    return json.loads(payload)", "graders": ["retains-code.md"]}
+  ]
+}

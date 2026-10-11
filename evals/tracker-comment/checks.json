@@ -1,0 +1,19 @@
+{
+  "accepted": [
+    "Retry is now in the dispatcher, only on 5xx and connection errors. Cap: 3 attempts, configured in sync.toml:12."
+  ],
+  "rejected": [
+    {
+      "output": "Retry on every status, including 5xx and connection errors. Cap: 30 attempts, config sync.toml:12.",
+      "graders": [
+        "retains-retry-scope.md"
+      ]
+    },
+    {
+      "output": "A useful line.\n\nA useful line.\n\nA useful line.\n\nA useful line.\n\nA useful line.\n\nA useful line.\n\nA useful line.\n\nA useful line.\n\nA useful line.\n\nA useful line.\n\nA useful line.\n\nA useful line.\n\nA useful line.",
+      "graders": [
+        "under-thirteen-lines.md"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,26 @@
+{
+  "accepted": [
+    "Yes, sync.retry_limit in config.toml. Default 3, range 1 to 10.",
+    "Yes, sync.retry_limit in config.toml.\n\nDefault 3.\n\nRange 1 to 10.\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n"
+  ],
+  "rejected": [
+    {
+      "output": "Yes, sync.retry_limit in config.toml. Default 30, range 10 to 100.",
+      "graders": [
+        "retains-config-and-range.md"
+      ]
+    },
+    {
+      "output": "Yes, sync.retry_limit in config.toml. Default 3, range 10 to 1.",
+      "graders": [
+        "retains-config-and-range.md"
+      ]
+    },
+    {
+      "output": "A useful line.\n\nA useful line.\n\nA useful line.\n\nA useful line.\n\nA useful line.\n\nA useful line.\n\nA useful line.\n\nA useful line.\n\nA useful line.\n\nA useful line.\n\nA useful line.\n\nA useful line.\n\nA useful line.",
+      "graders": [
+        "under-thirteen-lines.md"
+      ]
+    }
+  ]
+}

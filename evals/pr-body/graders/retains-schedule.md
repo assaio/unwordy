@@ -1,6 +1,6 @@
 ---
 type: regex
-pattern: '(?=.*1s)(?=.*2s)(?=.*4s)(?=.*502).+'
+pattern: '(?=.*(?<!\w)1s\s*,\s*2s\s*(?:,\s*(?:and\s+)?|and\s+)4s(?!\w))(?=.*\b502\b).+'
 flags: is
 match: contains
 ---

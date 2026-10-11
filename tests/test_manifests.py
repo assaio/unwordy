@@ -1,5 +1,6 @@
 import json
 import re
+import xml.etree.ElementTree as ET
 from pathlib import Path
 
 import pytest
@@ -25,6 +26,19 @@ def test_codex_overlay_matches_the_portable_extension():
     overlay = load(".codex-plugin/plugin.json")
     assert overlay["interface"] == portable["interface"]
     assert overlay["hooks"] == portable["hooks"]
+
+
+def test_codex_directory_metadata_and_icons_are_publishable():
+    interface = load(".codex-plugin/plugin.json")["interface"]
+    assert 1 <= len(interface["shortDescription"]) <= 30
+    for key in ("websiteURL", "supportURL", "privacyPolicyURL"):
+        assert interface[key].startswith("https://")
+    for key in ("logo", "composerIcon"):
+        asset = (ROOT / interface[key]).resolve()
+        assert ROOT in asset.parents and asset.is_file()
+        svg = ET.parse(asset).getroot()
+        _, _, width, height = map(float, svg.attrib["viewBox"].split())
+        assert width == height and width >= 48
 
 
 def test_claude_manifest_leaves_the_standard_hooks_file_alone():

@@ -21,6 +21,12 @@ Keep useful warmth and intentional punctuation. Use headers when required or
 when they make a long report easier to read. Do not chase a length percentage.
 Already useful text can remain unchanged.
 
+Identify supplied facts before editing, then compare the result with them.
+Keep expected and actual results distinct. Missing owners, dates, errors and
+test details stay missing; ask only when the gap prevents a useful rewrite.
+For code prose, preserve executable behavior. An `enabled: false` profile
+disables unwordy preferences; repository requirements and the user's request remain.
+
 Show the rewrite only, in a code block when intended for pasting. Mention any
 meaningful omission; do not silently drop it. Apply file or PR edits only when
 authorized by the user's request. Preserve earlier authorization.

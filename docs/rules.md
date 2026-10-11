@@ -6,7 +6,7 @@ Disable wins over an effect. For H1, explicit effect wins over attribution polic
 
 | ID | Default | Surface | Finding |
 |---|---|---|---|
-| H1 | block | supported text/commit metadata | unsolicited agent attribution or robot marker |
+| H1 | block | supported text/commit metadata | unsolicited agent attribution or standalone robot footer |
 | H2a | block | code comments | references to the task/request |
 | H2b | warn | code comments | step numbering; standard/algorithm context exempt |
 | H2c | block | code comments | edit history rather than current behavior |
@@ -29,12 +29,17 @@ The lazy preset and tone default S1 and S5 to off; explicit `rule.S1` and
 `rule.S5` settings can turn them back on.
 
 License headers, directives, generated files, fixture paths, snapshots and
-lock files are exempt. Fenced code and inline code are excluded from prose
-rules. These are syntax heuristics, not AI detection. A human can trigger them.
+lock files are exempt. Fenced code, inline code, quoted strings and URLs are
+excluded from prose rules, including literals inside code comments. Filler in
+the surrounding prose is still checked. A robot emoji inside a product name
+is allowed; a standalone robot footer is checked. These are syntax heuristics,
+not AI detection. A human can trigger them.
 
 Known MCP publishing names include create/update PR or issue and add/post
 comment/review. Text fields and titles are checked together. Read/search/list
-operations and unknown operations are skipped. `gh api` supports literal text
+operations and unknown operations are skipped, including generic MCP
+create/write/update calls for storage, databases, images or source files.
+`gh api` supports literal text
 fields and known PR/issue endpoints; JSON through --input and file-valued API
 fields are not followed. Shell writes through cat/tee/echo/printf are inspected;
 in-place editors such as sed and arbitrary scripts are not.

@@ -1,5 +1,30 @@
 # Changelog
 
+## v0.6.0
+
+- Preserve supplied facts, uncertainty, protected strings and code behavior in
+  skill instructions. Replace examples that introduced unsupported details.
+- Protect quoted errors, inline code and URLs from prose rewrites. Allow robot
+  emoji in product names; standalone attribution footers are still checked.
+- Make Stop respect disabled reply rules and warning effects. Skip unknown MCP
+  writes instead of treating storage, database or code payloads as comments.
+- Resolve the same nearest profile in `check`, `voice` and hooks. Render effective
+  attribution overrides consistently. Add `check --explain` and JSON line numbers.
+- Expand the corpus from 36 to 72 cases, with lazy and personal voices, required
+  templates, disclosure, sparse inputs, long reports and unchanged code behavior.
+  Check bounded literals, case-specific fact order and Python AST preservation.
+- Strengthen host graders against empty, truncated or fact-swapped output.
+  Support repeated benchmark runs, selected comparison arms and human rating
+  aggregation. No model improvement or human score is claimed without evidence.
+- Rewrite the README around installation, concrete examples and configuration.
+  Check all 84 demo selections in CI and validate public plugin metadata.
+- Package a separate OpenAI directory candidate with the portable skill,
+  listing metadata and icons, without lifecycle hooks or local checker claims.
+
+Migration: JSON findings include `line` and `surface`; a line can be null when
+only a patch fragment is available. `check --staged` and `--diff` now honor the
+nearest profile from the working directory, as `voice` already did.
+
 ## v0.5.1
 
 - Keep the standalone skill's writing, profile and setup guidance in SKILL.md,

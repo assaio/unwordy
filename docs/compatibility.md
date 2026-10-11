@@ -1,11 +1,11 @@
 # Host support
 
-Checked 2026-09-27 for release 0.4.0. Distinguish installed components, fixture
+Checked 2026-10-11 for release 0.6.0. Distinguish installed components, fixture
 coverage and observed live behavior. Python 3.9+; Windows through WSL.
 
 | Route | Skills | Session voice | Pre-write blocking | Warnings | Reply check |
 |---|---|---|---|---|---|
-| Claude Code plugin | packaged; manifest validated | adapter covered | adapter covered; earlier 0.3.0 observations, see release evidence | context adapter covered | Stop, strict block |
+| Claude Code plugin | packaged; manifest validated | adapter covered | adapter covered; earlier 0.3.0 observations, see release evidence | context adapter covered | Stop, strict block; per-rule effects respected |
 | Codex plugin | packaged | adapter covered | fixture coverage; live enforcement unconfirmed | context adapter covered; live unconfirmed | Stop fixture coverage |
 | Cursor plugin | packaged | sessionStart fixture coverage | fixture coverage; live unconfirmed | pre-tool delivery not guaranteed; use checker | not packaged |
 | Standalone unwordy skill | portable instructions | reads profile on use | none | model guidance only | none |

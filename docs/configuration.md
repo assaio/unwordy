@@ -37,6 +37,10 @@ the git root, `$XDG_CONFIG_HOME/unwordy/style.md` (default `~/.config/unwordy/st
 built-in senior. A project profile replaces personal defaults; it does not merge.
 Repository instructions, required templates and disclosure take precedence.
 
+`voice`, hooks, `check --staged` and `check --diff` resolve from the current
+working directory. Run them from the same directory to use the same profile.
+This matters in repositories with a nested `.unwordy.md`.
+
 Profiles use flat frontmatter, not general YAML. Lists are comma-separated;
 inline comments are supported. A body replaces preset prose. Omit the body to
 receive updated preset wording. Raw samples should never be saved in a profile.
@@ -94,6 +98,24 @@ limits are diagnosed. `doctor`, `voice` and `check` fail with exit 2; hooks paus
 checks and provide configuration feedback rather than unpredictably blocking.
 Cursor can receive this diagnosis at session start; its pre-tool route only allows.
 
+## Explain an active profile
+
+```sh
+sh /path/to/unwordy/bin/unwordy check --explain
+sh /path/to/unwordy/bin/unwordy check --explain --json
+sh /path/to/unwordy/bin/unwordy check --staged --explain --json
+```
+
+The explanation reports the selected profile, whether checks are active, the
+resolved settings, each rule's effect and attribution policy per surface.
+`rule.H1: warn` also changes rendered attribution guidance to warn;
+`disable: H1` changes it to allow. No second conflicting instruction is injected.
+
+JSON findings include `rule`, `reason`, `target`, `surface`, `line` and `effect`.
+Line numbers start at 1 and refer to the supplied message or full file. A section
+finding points to its start. `line: null` means the location is unavailable, as
+with a patch fragment. Text output includes `target:line` where both are known.
+
 ## Repository conventions
 
 Commitlint files, a commitlint package configuration or a Git commit template
@@ -124,3 +146,9 @@ Enable repository hooks only when that repository wants them.
 `UNWORDY_OFF=1` affects the process receiving it; setting it on an agent's child
 command does not retroactively change the environment of the host hook process.
 Remove a previously synced managed block when disabling voice in another host.
+The standalone skill also honors `enabled: false` and leaves the requested text
+under the host and repository's ordinary writing instructions.
+
+Reply checks run on Stop only under `strict: block`. Within that mode, `disable:
+S7`, `rule.S7: off` and sub-rule overrides are respected; `rule.S7: warn` returns
+feedback without requesting another reply.

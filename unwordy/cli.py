@@ -57,17 +57,23 @@ def _changed(root, base=None, staged=False):
 
 
 def _message(path, surface):
-    text = Path(path).read_text(encoding="utf-8", errors="replace").strip("\n")
+    text = Path(path).read_text(encoding="utf-8", errors="replace").rstrip("\n")
     title, _, body = text.partition("\n")
-    return extract.Message(surface, str(path), title, body.strip("\n"))
+    return extract.Message(surface, str(path), title, body)
 
 
 def check(args):
     root = _root() if args.diff or args.staged or args.commits else Path.cwd()
-    prof = profile.resolve(root)
+    prof = profile.resolve(Path.cwd())
+    explanation = prof.explain() if args.explain else None
+    if explanation is not None:
+        explanation["checks_active"] = prof.enabled and os.environ.get("UNWORDY_OFF") != "1"
     if prof.diagnostics:
         if args.json:
-            print(json.dumps({"findings": [], "errors": prof.diagnostics}))
+            data = {"findings": [], "errors": prof.diagnostics}
+            if explanation is not None:
+                data["configuration"] = explanation
+            print(json.dumps(data))
         else:
             print("unwordy configuration: " + "; ".join(prof.diagnostics), file=sys.stderr)
         return 2
@@ -101,13 +107,24 @@ def check(args):
                     finding.target = parts[0][:12]
                     findings.append(finding)
     rows = [{"rule": f.rule, "effect": lint.action(f, prof.settings),
-             "target": f.target, "reason": f.reason} for f in findings]
+             "target": f.target, "line": f.line, "surface": f.surface, "reason": f.reason} for f in findings]
     rows = [row for row in rows if row["effect"] != "ignore"]
     if args.json:
-        print(json.dumps({"findings": rows}, ensure_ascii=False))
+        data = {"findings": rows}
+        if explanation is not None:
+            data["configuration"] = explanation
+        print(json.dumps(data, ensure_ascii=False))
     else:
+        if explanation is not None:
+            print(f"profile: {explanation['profile']}")
+            print(f"checks_active: {explanation['checks_active']}")
+            for rule, effect in explanation["rules"].items():
+                print(f"{rule}: {effect}")
+            for surface, effect in explanation["attribution"].items():
+                print(f"{surface}.attribution: {effect}")
         for row in rows:
-            print(f"{row['target']}: unwordy {row['rule']} ({row['effect']}): {row['reason']}")
+            location = row["target"] + (f":{row['line']}" if row["line"] else "")
+            print(f"{location}: unwordy {row['rule']} ({row['effect']}): {row['reason']}")
     return 1 if any(row["effect"] == "block" or args.fail_on_warn for row in rows) else 0
 
 
@@ -213,6 +230,7 @@ def main(argv=None):
     checking.add_argument("--message-file", type=Path)
     checking.add_argument("--surface", choices=("commit", "pr", "issue", "comment"))
     checking.add_argument("--json", action="store_true")
+    checking.add_argument("--explain", action="store_true", help="show the resolved profile and rule effects")
     checking.add_argument("--fail-on-warn", action="store_true")
     checking.set_defaults(func=check)
     diagnostics = sub.add_parser("doctor", help="show local profile and hook readiness")
@@ -228,8 +246,8 @@ def main(argv=None):
     inventory.add_argument("--path", default="")
     inventory.set_defaults(func=conventions)
     args = parser.parse_args(argv)
-    if args.command == "check" and not (args.diff or args.staged or args.message_file or args.commits):
-        parser.error("check needs --diff BASE, --staged, --commits BASE or --message-file")
+    if args.command == "check" and not (args.diff or args.staged or args.message_file or args.commits or args.explain):
+        parser.error("check needs --diff BASE, --staged, --commits BASE, --message-file or --explain")
     if args.command == "check" and bool(args.message_file) != bool(args.surface):
         parser.error("--message-file and --surface must be used together")
     try:

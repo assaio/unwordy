@@ -1,6 +1,6 @@
 ---
 type: regex
-pattern: '(?=.*5xx)(?=.*connection)(?=.*3).+'
+pattern: '(?=.*(?:only|limited to)[^.!?\n]*5xx[^.!?\n]*connection)(?=.*(?<!\d)3(?!\d)).+'
 flags: is
 match: contains
 ---

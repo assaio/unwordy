@@ -1,5 +1,7 @@
 import json
 
+import pytest
+
 from unwordy import hook
 
 
@@ -179,6 +181,27 @@ def test_stop_does_not_block_twice(project):
     call = payload(cwd=str(project), hook_event_name="Stop", stop_hook_active=True,
                    last_assistant_message="Let me know if you want more.")
     assert hook.run("stop", call) is None
+
+
+@pytest.mark.parametrize("setting", ["rule.S7: off", "rule.S7b: off"])
+def test_stop_honors_rule_effect_off(project, setting):
+    (project / ".unwordy.md").write_text(f"---\nstrict: block\n{setting}\n---\n")
+    assert hook.run("stop", payload(cwd=str(project),
+                                    last_assistant_message="Let me know if you need more.")) is None
+
+
+def test_stop_rule_warning_does_not_block(project):
+    (project / ".unwordy.md").write_text("---\nstrict: block\nrule.S7b: warn\n---\n")
+    out = hook.run("stop", payload(cwd=str(project), last_assistant_message="Let me know if you need more."))
+    assert "S7b" in out["systemMessage"] and "decision" not in out
+
+
+@pytest.mark.parametrize("tool", ["mcp__storage__create_file", "mcp__database__update_rows",
+                                  "mcp__graphics__create_image", "mcp__git__merge_branch"])
+def test_unrelated_mcp_writes_are_not_communication(project, tool):
+    assert hook.run("pre-mcp", payload(cwd=str(project), tool_name=tool,
+                                      tool_input={"content": 'label = "🤖"',
+                                                  "description": "comprehensive data"})) is None
 
 
 def test_stop_reads_the_transcript_for_the_question(project, tmp_path):

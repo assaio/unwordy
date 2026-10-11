@@ -7,6 +7,7 @@ characters and is what `disable:` and the loop guard also accept.
 import os
 import re
 from dataclasses import dataclass
+from typing import Optional
 
 from . import extract
 
@@ -17,6 +18,7 @@ class Finding:
     reason: str
     target: str = ""
     surface: str = ""
+    line: Optional[int] = None
 
     @property
     def hard(self):
@@ -60,7 +62,7 @@ _H1 = re.compile(
     r"|made-with: *cursor\b"
     r"|(?:^|\n)(?:author|committer)=(?:claude(?: code)?|codex(?: cli)?|cursor(?: agent)?|chatgpt|copilot|gemini)(?:\s*<|$)"
     r"|claude-session:"
-    r"|\U0001F916"
+    r"|(?:^|\n)[ \t]*\U0001F916[ \t]*(?=$|\n)"
     r"|noreply@anthropic\.com|cursoragent@cursor\.com|noreply@openai\.com",
     re.I,
 )
@@ -124,7 +126,11 @@ _YES_NO = re.compile(
 )
 _ONE_FACT = re.compile(r"^(?:what|which|where|when|who|whose|how many|how much|how long|how old)\b", re.I)
 _FENCE = re.compile(r"^\s*(?:```|~~~)")
-_INLINE_CODE = re.compile(r"`[^`\n]*`")
+_PROTECTED = re.compile(
+    r"`+[^`\n]*`+|https?://[^\s<>]+|mailto:[^\s<>]+"
+    r'|"[^"\n]*"|“[^”\n]*”|«[^»\n]*»|„[^“\n]*“'
+    r"|(?<!\w)'[^'\n]+'(?!\w)|(?<!\w)‘[^’\n]+’(?!\w)"
+)
 _LIST_MARKER = re.compile(r"^\s*(?:[-*+>]|\d+[.)])\s+")
 _DIRECTIVE = re.compile(
     r"noqa|eslint-(?:disable|enable)|\btype:|@ts-|pragma|nolint|pylint:|prettier-ignore"
@@ -165,12 +171,13 @@ def lint_message(message, settings, conventions=False, required_headings=()):
     the subject length and opener checks stay out of its way for commits.
     """
     where = _WHERE.get(message.surface, "the message")
-    prose = "\n".join(_prose_lines("\n".join(p for p in (message.title, message.body) if p)))
+    prose = _prose_text("\n".join(p for p in (message.title, message.body) if p))
     findings = _attribution(prose + "\n" + message.meta, where, message.surface == "commit", message.surface)
     findings += _dashes(prose, where) + _banned(prose, where, settings)
-    findings += _structure(message.title, message.body, message.surface, where, settings)
+    offset = 1 if message.title else 0
+    findings += _structure(message.title, message.body, message.surface, where, settings, offset)
     if message.surface in ("commit", "pr"):
-        findings += _boilerplate(message.title, message.body, where)
+        findings += _boilerplate(message.title, message.body, where, offset)
     if conventions and message.surface == "commit":
         findings = [f for f in findings if f.rule not in ("S5a", "S6c")]
     if message.surface == "pr" and settings.get("pr_template") != "ignore":
@@ -180,17 +187,21 @@ def lint_message(message, settings, conventions=False, required_headings=()):
             required = headings
         if headings and headings <= required:
             findings = [f for f in findings if f.rule not in ("S5d", "S5f", "S6a")]
+    for finding in findings:
+        finding.surface = message.surface
     return findings
 
 
 def lint_field(key, text, settings):
     """A long text field of an MCP tool call, such as a Jira or GitHub comment body."""
-    prose = "\n".join(_prose_lines(text))
+    prose = _prose_text(text)
     findings = _attribution(prose, "the comment", False, "comment")
     findings += _dashes(prose, "the comment")
     findings += _banned(prose, "the comment", settings)
     if extract.key_words(key) & _STRUCTURED_KEYS:
         findings += _structure("", text, "comment", "the comment", settings)
+    for finding in findings:
+        finding.surface = "comment"
     return findings
 
 
@@ -284,11 +295,14 @@ def _lint_prose_file(change, settings):
         if index not in change.added:
             continue
         for finding in _attribution(text, where, False, "docs") + _dashes(text, where) + _banned(text, where, settings):
+            finding.line = None if change.partial else index + 1
+            finding.surface = "docs"
             hits.setdefault(finding.rule, []).append(finding)
         stripped = _LIST_MARKER.sub("", text).strip()
         if _H3.match(stripped):
             hits.setdefault("H3", []).append(Finding(
-                "H3", f"chat phrasing in {where} ({_snippet(stripped)}). Write it as documentation, not as a reply."
+                "H3", f"chat phrasing in {where} ({_snippet(stripped)}). Write it as documentation, not as a reply.",
+                surface="docs", line=None if change.partial else index + 1,
             ))
     return _collapse(hits)
 
@@ -300,17 +314,21 @@ def _lint_code(change, syntax, settings):
     name = os.path.basename(change.path)
     hits = {}
 
+    current_line = None
+
     def hit(rule, reason):
-        hits.setdefault(rule, []).append(Finding(rule, reason))
+        hits.setdefault(rule, []).append(Finding(rule, reason, surface="code", line=current_line))
 
     for i in sorted(change.added):
+        current_line = None if change.partial else i + 1
         if i >= len(info) or i in exempt:
             continue
         line = info[i]
-        text = line.comment
+        text = _unprotected(line.comment)
         if line.kind not in ("comment", "mixed") or not text:
             continue
         for finding in _attribution(text, "a code comment", False, "code"):
+            finding.line = current_line
             hits.setdefault("H1", []).append(finding)
         _task_references(text, settings, hit)
         if _H3.match(text):
@@ -323,14 +341,17 @@ def _lint_code(change, syntax, settings):
             if echo and nxt is not None and echo.group(1).lower() in lines[nxt].lower():
                 hit("H4b", f"comment restates the next line ({_snippet(text)}). Delete it.")
         for finding in _dashes(text, "a code comment") + _banned(text, "a code comment", settings):
+            finding.line = current_line
+            finding.surface = "code"
             hits.setdefault(finding.rule, []).append(finding)
 
     comment_lines = sum(1 for i in change.added if i < len(info) and info[i].kind == "comment" and i not in exempt)
     code_lines = sum(1 for i in change.added if i < len(info) and info[i].kind in ("code", "mixed"))
     if code_lines >= 8 and comment_lines / code_lines > 0.3:
+        current_line = None if change.partial else min(change.added) + 1
         hit("S3", f"{comment_lines} comment lines for {code_lines} code lines in {name}. Keep only comments that say why.")
     if not change.partial:
-        for fn, doc_lines, body_lines in _long_docstrings(lines, info, syntax, change.added):
+        for fn, doc_lines, body_lines, current_line in _long_docstrings(lines, info, syntax, change.added):
             hit("S4", f"docstring of {fn}() is {doc_lines} lines for a {body_lines}-line body. Cut it to what the signature does not say.")
     return _collapse(hits)
 
@@ -432,7 +453,7 @@ def _python_docstrings(lines, info, added):
                 body += 1
         doc = end - start
         if doc > 3 and doc > body and added & set(range(start, end)):
-            yield match.group(2), doc, body
+            yield match.group(2), doc, body, start + 1
 
 
 def _brace_docstrings(lines, info, added):
@@ -470,7 +491,7 @@ def _brace_docstrings(lines, info, added):
                 inner += 1
         name = _CALL_NAME.search(lines[decl])
         if opened is not None and doc > 3 and doc > inner and added & set(range(start, start + doc)):
-            yield (name.group(1) if name else "function"), doc, inner
+            yield (name.group(1) if name else "function"), doc, inner, start + 1
 
 
 def _attribution(text, where, commit, surface=""):
@@ -478,12 +499,16 @@ def _attribution(text, where, commit, surface=""):
     if not match:
         return []
     again = "Remove it and commit again." if commit else "Remove it and try again."
-    return [Finding("H1", f"attribution in {where} ({_snippet(match.group(0))}). {again}", surface=surface)]
+    position = match.start() + (1 if match.group(0).startswith("\n") else 0)
+    return [Finding("H1", f"attribution in {where} ({_snippet(match.group(0))}). {again}",
+                    surface=surface, line=_line_number(text, position))]
 
 
 def _dashes(text, where):
-    if _DASH.search(text):
-        return [Finding("S1", f"em dash in {where}. Use a comma, a colon or a full stop.")]
+    match = _DASH.search(text)
+    if match:
+        return [Finding("S1", f"em dash in {where}. Use a comma, a colon or a full stop.",
+                        line=_line_number(text, match.start()))]
     return []
 
 
@@ -491,7 +516,8 @@ def _banned(text, where, settings):
     pattern = _banned_regex(tuple(settings.get("banned_words") or ()))
     match = pattern.search(text.replace("\u2019", "'")) if pattern else None
     if match:
-        return [Finding("S2", f"'{match.group(0)}' in {where}. Use a plain word.")]
+        return [Finding("S2", f"'{match.group(0)}' in {where}. Use a plain word.",
+                        line=_line_number(text, match.start()))]
     return []
 
 
@@ -520,11 +546,11 @@ def _limit(settings, surface, key, default):
 _FLAT = {"max_body_lines": "max_pr_body_lines"}
 
 
-def _structure(title, body, surface, where, settings):
+def _structure(title, body, surface, where, settings, offset=0):
     findings = []
     limit = _limit(settings, surface, "max_subject", 72)
     if title and len(title) > limit:
-        findings.append(Finding("S5a", f"subject is {len(title)} characters, over {limit}. Shorten it."))
+        findings.append(Finding("S5a", f"subject is {len(title)} characters, over {limit}. Shorten it.", line=1))
     lines = [line for line in _prose_lines(body) if line.strip()]
     limit = _limit(settings, surface, "max_body_lines", 12)
     if len(lines) > limit:
@@ -541,22 +567,28 @@ def _structure(title, body, surface, where, settings):
         findings.append(Finding("S5e", f"{labels} bold-label bullets in {where}. Write sentences."))
     if any(_EMOJI.search(line) for line in headers):
         findings.append(Finding("S5f", f"emoji in a header of {where}. Drop it."))
+    for finding in findings:
+        if finding.line is None:
+            finding.line = offset + 1
     return findings
 
 
-def _boilerplate(title, body, where):
+def _boilerplate(title, body, where, offset=0):
     findings = []
     text = "\n".join(_prose_lines(body))
     if _S6_SUMMARY.search(text) and _S6_TEST_PLAN.search(text):
         findings.append(Finding("S6a", f"'## Summary' plus '## Test plan' template in {where}. Say what, why and how tested in plain lines."))
     if _S6_CHANGES.search(text):
         findings.append(Finding("S6b", f"'Summary of changes' block in {where}. The diff is the summary."))
-    first = next((line.strip() for line in text.splitlines() if line.strip()), "")
-    for line in (title.strip(), first):
+    first = next(((index, line.strip()) for index, line in _prose_indexed(body.splitlines()) if line.strip()), (0, ""))
+    for number, line in ((1, title.strip()), (offset + first[0] + 1, first[1])):
         match = _S6_OPENER.match(line)
         if match:
-            findings.append(Finding("S6c", f"opener '{match.group(0)}'. Start with the change itself."))
+            findings.append(Finding("S6c", f"opener '{match.group(0)}'. Start with the change itself.", line=number))
             break
+    for finding in findings:
+        if finding.line is None:
+            finding.line = offset + 1
     return findings
 
 
@@ -578,11 +610,25 @@ def _prose_indexed(lines):
             fenced = not fenced
             continue
         if not fenced and not line.lstrip().startswith(">"):
-            yield index, _INLINE_CODE.sub("", line)
+            yield index, _unprotected(line)
 
 
 def _prose_lines(text):
     return [line for _, line in _prose_indexed((text or "").splitlines())]
+
+
+def _unprotected(text):
+    return _PROTECTED.sub(lambda match: " " * len(match.group(0)), text)
+
+
+def _prose_text(text):
+    lines = (text or "").splitlines()
+    prose = dict(_prose_indexed(lines))
+    return "\n".join(prose.get(index, "") for index in range(len(lines)))
+
+
+def _line_number(text, position):
+    return text.count("\n", 0, position) + 1
 
 
 def _snippet(text, limit=60):
@@ -595,5 +641,5 @@ def _collapse(hits):
     for rule in sorted(hits):
         first, more = hits[rule][0], len(hits[rule]) - 1
         suffix = f" ({more} more like this)" if more else ""
-        findings.append(Finding(rule, first.reason + suffix))
+        findings.append(Finding(rule, first.reason + suffix, first.target, first.surface, first.line))
     return findings
