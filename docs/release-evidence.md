@@ -5,6 +5,8 @@
 Date: 2026-10-11. Python: 3.9.6. Claude Code: 2.1.296. Codex CLI: 0.162.1.
 
 - Offline Python suite: 355 passed. CI runs Python 3.9, 3.11 and 3.14.
+- [GitHub CI](https://github.com/assaio/unwordy/actions/runs/38173030212)
+  passed on all three Python versions; demo deployment also passed.
 - Claude marketplace and plugin strict validation passed.
 - The standalone skill passed the Codex skill-creator frontmatter validator.
   Claude-specific invocation fields in sibling skills remain host-specific.
@@ -16,6 +18,14 @@ Date: 2026-10-11. Python: 3.9.6. Claude Code: 2.1.296. Codex CLI: 0.162.1.
   executable permissions, standalone isolation and checksums. The separate
   OpenAI candidate excludes lifecycle hooks and includes its referenced icons.
 - `doctor`, `check --explain` and diff whitespace checks passed.
+- Built archives passed checksum/path checks. The full ZIP contains 146 files,
+  the standalone skill contains two, and the OpenAI candidate contains five.
+  `doctor` and a message check passed from the extracted full ZIP.
+- A single Skills CLI installation from the public repository succeeded in a
+  temporary Claude Code project. Its two skill files match the committed skill;
+  no sibling skills or plugin runtime were installed. The public demo matches
+  the committed HTML, and the [Skills.sh listing](https://skills.sh/assaio/unwordy/unwordy)
+  is accessible. Installation telemetry is not reviewed directory acceptance.
 
 The live code-comment pilot completed one run per arm; both passed all five
 graders. The exploratory five-case comparison exposed two test defects: the PR

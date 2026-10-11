@@ -37,7 +37,7 @@ unavailable model comparison or an uncollected human rating.
 
 | Route | How to submit | Constraint |
 |---|---|---|
-| Skills.sh | Real public installation through npx skills add assaio/unwordy --skill unwordy | Automatic installation telemetry; not a reviewed acceptance |
+| [Skills.sh](https://skills.sh/assaio/unwordy/unwordy) | Listing accessible; one clean public install verified on 2026-10-11 | Automatic installation telemetry; not a reviewed acceptance |
 | ccplugins/awesome-claude-code-plugins | Existing [PR #557](https://github.com/ccplugins/awesome-claude-code-plugins/pull/557), under Git Workflow | Pending maintainer review; update the existing submission for this release |
 | Claude | https://claude.ai/directory/manage, Plugin bundle | Authenticated paid account and relevant organization role |
 | OpenAI | https://platform.openai.com/plugins, Skills only; upload unwordy-openai-0.6.0.zip | Verified developer identity, Apps Management Write, scans and review |
