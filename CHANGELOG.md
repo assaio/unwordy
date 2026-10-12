@@ -1,14 +1,13 @@
 # Changelog
 
-## v0.6.1
+## Unreleased
 
-- Add a public terms page containing the existing MIT license and include its
-  URL in OpenAI listing metadata and the directory archive.
-- Explain Git commits, pull requests, code reviews and software team workflows
-  in listing descriptions and capability labels for the Developer Tools category.
-- Record the portal's current block on new skills-only submissions separately
-  from metadata errors. A valid ZIP does not guarantee directory eligibility.
-- Ignore macOS Finder metadata when preparing committed release artifacts.
+- Remove the abandoned directory submission bundle, terms page and submission
+  guide. Release packaging produces the plugin and standalone skill only.
+
+## v0.6.1 (withdrawn)
+
+The submission-only metadata release was withdrawn. The active release is 0.6.0.
 
 ## v0.6.0
 
@@ -28,8 +27,6 @@
   aggregation. No model improvement or human score is claimed without evidence.
 - Rewrite the README around installation, concrete examples and configuration.
   Check all 84 demo selections in CI and validate public plugin metadata.
-- Package a separate OpenAI directory candidate with the portable skill,
-  listing metadata and icons, without lifecycle hooks or local checker claims.
 
 Migration: JSON findings include `line` and `surface`; a line can be null when
 only a patch fragment is available. `check --staged` and `--diff` now honor the

@@ -18,7 +18,7 @@ SPEC.loader.exec_module(package)
 def release_repo(tmp_path, monkeypatch):
     repo = tmp_path / "release-repo"
     repo.mkdir()
-    for name in ("plugin.json", ".codex-plugin/plugin.json", "LICENSE", "docs/assets/unwordy.svg", "docs/terms.html",
+    for name in ("plugin.json", ".codex-plugin/plugin.json", "LICENSE", "docs/assets/unwordy.svg",
                  "skills/unwordy/SKILL.md", "skills/unwordy/agents/openai.yaml", "bin/unwordy", "hooks/hooks.json"):
         target = repo / name
         target.parent.mkdir(parents=True, exist_ok=True)
@@ -40,23 +40,18 @@ def test_release_archives_keep_permissions_and_exclude_local_state(release_repo,
     package.main()
     version = json.loads((release_repo / "plugin.json").read_text())["version"]
     artifacts = tmp_path / "artifacts"
+    assert {path.name for path in artifacts.iterdir()} == {
+        f"unwordy-{version}.zip", f"unwordy-skill-{version}.zip", "SHA256SUMS",
+    }
     with zipfile.ZipFile(artifacts / f"unwordy-{version}.zip") as archive:
         assert "hooks/hooks.json" in archive.namelist()
         assert not any(name.startswith(".git/") or name == ".env" for name in archive.namelist())
         assert archive.getinfo("bin/unwordy").external_attr >> 16 & 0o111 == 0o111
     with zipfile.ZipFile(artifacts / f"unwordy-skill-{version}.zip") as archive:
         assert set(archive.namelist()) == {"unwordy/SKILL.md", "unwordy/agents/openai.yaml"}
-    with zipfile.ZipFile(artifacts / f"unwordy-openai-{version}.zip") as archive:
-        manifest = json.loads(archive.read(".codex-plugin/plugin.json"))
-        assert "hooks" not in manifest and not any(name.startswith("hooks/") for name in archive.namelist())
-        assert "local checker or lifecycle hooks" in manifest["interface"]["longDescription"]
-        assert "skills/unwordy/SKILL.md" in archive.namelist()
-        assert "docs/terms.html" in archive.namelist()
-        assert manifest["interface"]["termsOfServiceURL"].endswith("/unwordy/terms.html")
-        assert "software development teams" in manifest["interface"]["longDescription"]
-        for key in ("logo", "composerIcon"):
-            assert manifest["interface"][key].removeprefix("./") in archive.namelist()
-    for line in (artifacts / "SHA256SUMS").read_text().splitlines():
+    checksums = (artifacts / "SHA256SUMS").read_text().splitlines()
+    assert len(checksums) == 2
+    for line in checksums:
         digest, name = line.split("  ")
         assert hashlib.sha256((artifacts / name).read_bytes()).hexdigest() == digest
 

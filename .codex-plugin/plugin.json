@@ -1,6 +1,6 @@
 {
   "name": "unwordy",
-  "version": "0.6.1",
+  "version": "0.6.0",
   "description": "Personal and team writing profiles for coding agents. Preserve facts and repository conventions in commits, PRs, reviews, QA reports and design handoffs; local checks flag filler.",
   "author": {
     "name": "assaio",
@@ -26,14 +26,12 @@
   "interface": {
     "displayName": "unwordy",
     "shortDescription": "Your team's writing voice",
-    "longDescription": "Writing guidance and local checks for software development teams. Draft Git commit messages, pull request descriptions, code reviews, QA reports and design handoffs. Personal and team profiles keep role and tone independent while preserving supplied facts, test evidence and required repository templates. The full plugin includes a Python checker and optional host hooks; live Codex and Cursor hook enforcement remains unconfirmed.",
+    "longDescription": "Personal and team profiles with independent role and tone. Preserve evidence and required templates in dev, QA and design communication. Local checks and optional host hooks flag filler.",
     "developerName": "assaio",
     "category": "Developer Tools",
     "capabilities": [
-      "Draft Git commit messages",
-      "Rewrite pull request descriptions",
-      "Write code reviews",
-      "Refine QA reports and design handoffs"
+      "Read",
+      "Write"
     ],
     "defaultPrompt": [
       "Write a PR description in our team’s voice, keeping risk and test evidence",
@@ -43,7 +41,6 @@
     "composerIcon": "./docs/assets/unwordy.svg",
     "websiteURL": "https://assaio.github.io/unwordy/",
     "supportURL": "https://github.com/assaio/unwordy/issues",
-    "privacyPolicyURL": "https://github.com/assaio/unwordy/blob/main/docs/privacy.md",
-    "termsOfServiceURL": "https://assaio.github.io/unwordy/terms.html"
+    "privacyPolicyURL": "https://github.com/assaio/unwordy/blob/main/docs/privacy.md"
   }
 }

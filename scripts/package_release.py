@@ -1,4 +1,4 @@
-"""Package committed plugin, standalone skill and OpenAI directory candidate."""
+"""Package the committed plugin and standalone skill without local state."""
 
 import hashlib
 import json
@@ -12,26 +12,6 @@ ROOT = Path(__file__).resolve().parents[1]
 
 def git(*args):
     return subprocess.check_output(["git", "-C", str(ROOT), *args])
-
-
-def directory_manifest():
-    data = json.loads(git("show", "HEAD:.codex-plugin/plugin.json"))
-    data.pop("hooks", None)
-    data["keywords"] = [word for word in data["keywords"] if word != "hooks"]
-    data["description"] = (
-        "Personal and team writing guidance for commits, PRs, reviews, QA reports "
-        "and design handoffs. Preserve supplied facts and repository conventions."
-    )
-    data["interface"]["longDescription"] = (
-        "A writing skill for developers and software development teams. Draft Git "
-        "commit messages, pull request descriptions, code reviews, QA reports and "
-        "design handoffs from supplied facts. Personal and team profiles keep role "
-        "and tone independent. Preserve uncertainty, test evidence and required "
-        "repository templates; missing details stay missing. "
-        "This directory bundle provides model guidance; it includes no local checker "
-        "or lifecycle hooks. Results depend on the host model."
-    )
-    return (json.dumps(data, indent=2, ensure_ascii=False) + "\n").encode()
 
 
 def main():
@@ -48,11 +28,9 @@ def main():
             modes[name.decode()] = int(metadata.split()[0], 8)
     artifacts = []
     skill_files = [path for path in files if path.startswith("skills/unwordy/")]
-    directory_files = skill_files + [".codex-plugin/plugin.json", "docs/assets/unwordy.svg", "docs/terms.html", "LICENSE"]
-    for name, selected, prefix, overrides in (
-        (f"unwordy-{version}.zip", files, "", {}),
-        (f"unwordy-skill-{version}.zip", skill_files, "skills/", {}),
-        (f"unwordy-openai-{version}.zip", directory_files, "", {".codex-plugin/plugin.json": directory_manifest()}),
+    for name, selected, prefix in (
+        (f"unwordy-{version}.zip", files, ""),
+        (f"unwordy-skill-{version}.zip", skill_files, "skills/"),
     ):
         path = destination / name
         with zipfile.ZipFile(path, "w", compression=zipfile.ZIP_DEFLATED) as archive:
@@ -60,8 +38,7 @@ def main():
                 info = zipfile.ZipInfo(source.removeprefix(prefix))
                 info.compress_type = zipfile.ZIP_DEFLATED
                 info.external_attr = modes[source] << 16
-                content = overrides[source] if source in overrides else git("show", f"HEAD:{source}")
-                archive.writestr(info, content)
+                archive.writestr(info, git("show", f"HEAD:{source}"))
         artifacts.append(f"{hashlib.sha256(path.read_bytes()).hexdigest()}  {path.name}")
     (destination / "SHA256SUMS").write_text("\n".join(artifacts) + "\n")
     print("\n".join(artifacts))
