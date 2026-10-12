@@ -18,7 +18,7 @@ SPEC.loader.exec_module(package)
 def release_repo(tmp_path, monkeypatch):
     repo = tmp_path / "release-repo"
     repo.mkdir()
-    for name in ("plugin.json", ".codex-plugin/plugin.json", "LICENSE", "docs/assets/unwordy.svg",
+    for name in ("plugin.json", ".codex-plugin/plugin.json", "LICENSE", "docs/assets/unwordy.svg", "docs/terms.html",
                  "skills/unwordy/SKILL.md", "skills/unwordy/agents/openai.yaml", "bin/unwordy", "hooks/hooks.json"):
         target = repo / name
         target.parent.mkdir(parents=True, exist_ok=True)
@@ -51,6 +51,9 @@ def test_release_archives_keep_permissions_and_exclude_local_state(release_repo,
         assert "hooks" not in manifest and not any(name.startswith("hooks/") for name in archive.namelist())
         assert "local checker or lifecycle hooks" in manifest["interface"]["longDescription"]
         assert "skills/unwordy/SKILL.md" in archive.namelist()
+        assert "docs/terms.html" in archive.namelist()
+        assert manifest["interface"]["termsOfServiceURL"].endswith("/unwordy/terms.html")
+        assert "software development teams" in manifest["interface"]["longDescription"]
         for key in ("logo", "composerIcon"):
             assert manifest["interface"][key].removeprefix("./") in archive.namelist()
     for line in (artifacts / "SHA256SUMS").read_text().splitlines():

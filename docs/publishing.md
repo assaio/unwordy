@@ -1,16 +1,17 @@
 # Directory submissions
 
-Package: unwordy 0.6.0, MIT, https://github.com/assaio/unwordy.
+Package: unwordy 0.6.1, MIT, https://github.com/assaio/unwordy.
 Demo: https://assaio.github.io/unwordy/. Release artifacts:
 
-- `unwordy-0.6.0.zip`: full plugin and local checker, including host hooks.
-- `unwordy-skill-0.6.0.zip`: portable standalone skill.
-- `unwordy-openai-0.6.0.zip`: directory candidate with the standalone skill,
+- `unwordy-0.6.1.zip`: full plugin and local checker, including host hooks.
+- `unwordy-skill-0.6.1.zip`: portable standalone skill.
+- `unwordy-openai-0.6.1.zip`: directory candidate with the standalone skill,
   Codex listing metadata and icons; no lifecycle hooks or local checker.
 - `SHA256SUMS`: checksums for all three archives.
 
 Do not claim live Codex/Cursor enforcement. The OpenAI candidate is prepared
-for upload; portal scans and review determine whether it can be published.
+for upload; portal scans, intake eligibility and review determine whether it can
+be published. The observed OpenAI intake block below currently prevents review.
 
 ## Submission copy
 
@@ -40,7 +41,7 @@ unavailable model comparison or an uncollected human rating.
 | [Skills.sh](https://skills.sh/assaio/unwordy/unwordy) | Listing accessible; one clean public install verified on 2026-10-11 | Automatic installation telemetry; not a reviewed acceptance |
 | ccplugins/awesome-claude-code-plugins | Existing [PR #557](https://github.com/ccplugins/awesome-claude-code-plugins/pull/557), under Git Workflow | Pending maintainer review; update the existing submission for this release |
 | Claude | https://claude.ai/directory/manage, Plugin bundle | Authenticated paid account and relevant organization role |
-| OpenAI | https://platform.openai.com/plugins, Skills only; upload unwordy-openai-0.6.0.zip | Verified developer identity, Apps Management Write, scans and review |
+| OpenAI | https://platform.openai.com/plugins; unwordy-openai-0.6.1.zip fixes listing metadata | New skills-only draft blocked by portal intake; verified identity and scans are separate requirements |
 | Cursor | https://cursor.com/marketplace/publish | Authenticated form and local testing; disclose unconfirmed live hook routes |
 | [Awesome Claude Code](https://github.com/hesreallyhim/awesome-claude-code/blob/main/CONTRIBUTING.md) | Human web issue form | Human recommendations only; gh submission is explicitly disallowed |
 | [travisvn/awesome-claude-skills](https://github.com/travisvn/awesome-claude-skills/blob/main/CONTRIBUTING.md) | Human submission after community adoption | 10 stars minimum and explicit ban on AI-assisted submission |
@@ -55,7 +56,26 @@ guide requires lifecycle hooks to be removed from public submissions. The
 separate directory archive includes only the self-contained `unwordy` skill;
 it does not depend on sibling skills or package executables. Choose the owning
 organization in the portal, upload this archive, resolve scans and submit for
-review. [OpenAI conversion guide](https://developers.openai.com/plugins/guides/submit-claude-plugin).
+review if intake is available. [OpenAI conversion guide](https://developers.openai.com/plugins/guides/submit-claude-plugin).
+
+## OpenAI portal findings, 2026-10-12
+
+The uploaded 0.6.0 draft reported a missing terms URL, unconfirmed category and
+an intake error: “We are not accepting more skills-only submissions at this time.”
+Skill scanning was still in progress in that observation. This is evidence for
+this draft; the portal did not provide a reopening date.
+
+Version 0.6.1 supplies `termsOfServiceURL` and a public
+[terms page](https://assaio.github.io/unwordy/terms.html) with the existing MIT
+license. Descriptions and capability labels explain software development
+workflows to support the Developer Tools category. A new scan must determine
+whether the metadata findings clear. These changes cannot remove the intake
+block or establish that the skill has passed its scan.
+
+Public documentation describes the skills-only upload route, but it also allows
+additional eligibility requirements. Treat the current portal finding as the
+submission status. Keep the draft for a future eligible submission or contact
+OpenAI about availability. [Plugin guidelines](https://developers.openai.com/plugins/plugin-guidelines).
 
 ## Launch text
 

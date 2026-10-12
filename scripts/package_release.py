@@ -23,9 +23,11 @@ def directory_manifest():
         "and design handoffs. Preserve supplied facts and repository conventions."
     )
     data["interface"]["longDescription"] = (
-        "A portable skill for writing and rewriting in a personal or team voice. "
-        "Choose role and tone independently, preserve supplied facts, uncertainty, "
-        "test evidence and required templates. Missing details stay missing. "
+        "A writing skill for developers and software development teams. Draft Git "
+        "commit messages, pull request descriptions, code reviews, QA reports and "
+        "design handoffs from supplied facts. Personal and team profiles keep role "
+        "and tone independent. Preserve uncertainty, test evidence and required "
+        "repository templates; missing details stay missing. "
         "This directory bundle provides model guidance; it includes no local checker "
         "or lifecycle hooks. Results depend on the host model."
     )
@@ -46,7 +48,7 @@ def main():
             modes[name.decode()] = int(metadata.split()[0], 8)
     artifacts = []
     skill_files = [path for path in files if path.startswith("skills/unwordy/")]
-    directory_files = skill_files + [".codex-plugin/plugin.json", "docs/assets/unwordy.svg", "LICENSE"]
+    directory_files = skill_files + [".codex-plugin/plugin.json", "docs/assets/unwordy.svg", "docs/terms.html", "LICENSE"]
     for name, selected, prefix, overrides in (
         (f"unwordy-{version}.zip", files, "", {}),
         (f"unwordy-skill-{version}.zip", skill_files, "skills/", {}),

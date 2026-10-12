@@ -1,5 +1,25 @@
 # Release evidence
 
+## 0.6.1
+
+Date: 2026-10-12. Metadata and packaging follow-up to 0.6.0.
+
+- 16 focused manifest and archive tests passed, including all four listing URLs,
+  terms page content matching the existing MIT license and directory packaging.
+- All 84 demo selections passed after adding the terms link.
+- Diff whitespace checks passed. The standalone skill instructions and checker
+  behavior are unchanged by this release.
+
+The observed 0.6.0 portal draft required a terms URL and could not confirm the
+Developer Tools category. Version 0.6.1 provides the URL and explains software
+development use cases in descriptions and capability labels. Portal validation
+of the revised archive has not been observed.
+
+The same draft reported that new skills-only submissions were not being
+accepted. This intake block is independent of metadata corrections. The skill
+scan was still running in that observation; no directory approval is claimed.
+See [submission status](publishing.md#openai-portal-findings-2026-10-12).
+
 ## 0.6.0
 
 Date: 2026-10-11. Python: 3.9.6. Claude Code: 2.1.296. Codex CLI: 0.162.1.

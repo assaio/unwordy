@@ -1,3 +1,4 @@
+import html
 import json
 import re
 import xml.etree.ElementTree as ET
@@ -28,10 +29,10 @@ def test_codex_overlay_matches_the_portable_extension():
     assert overlay["hooks"] == portable["hooks"]
 
 
-def test_codex_directory_metadata_and_icons_are_publishable():
+def test_codex_listing_metadata_and_icons_meet_package_requirements():
     interface = load(".codex-plugin/plugin.json")["interface"]
     assert 1 <= len(interface["shortDescription"]) <= 30
-    for key in ("websiteURL", "supportURL", "privacyPolicyURL"):
+    for key in ("websiteURL", "supportURL", "privacyPolicyURL", "termsOfServiceURL"):
         assert interface[key].startswith("https://")
     for key in ("logo", "composerIcon"):
         asset = (ROOT / interface[key]).resolve()
@@ -39,6 +40,15 @@ def test_codex_directory_metadata_and_icons_are_publishable():
         svg = ET.parse(asset).getroot()
         _, _, width, height = map(float, svg.attrib["viewBox"].split())
         assert width == height and width >= 48
+
+
+def test_terms_url_points_to_a_page_with_the_existing_license():
+    interface = load(".codex-plugin/plugin.json")["interface"]
+    assert interface["termsOfServiceURL"] == interface["websiteURL"] + "terms.html"
+    page = (ROOT / "docs/terms.html").read_text(encoding="utf-8")
+    license_text = re.search(r'<pre id="license">(.*?)</pre>', page, re.S)
+    assert license_text is not None
+    assert html.unescape(license_text.group(1)) == (ROOT / "LICENSE").read_text(encoding="utf-8").strip()
 
 
 def test_claude_manifest_leaves_the_standard_hooks_file_alone():

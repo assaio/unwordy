@@ -1,5 +1,15 @@
 # Changelog
 
+## v0.6.1
+
+- Add a public terms page containing the existing MIT license and include its
+  URL in OpenAI listing metadata and the directory archive.
+- Explain Git commits, pull requests, code reviews and software team workflows
+  in listing descriptions and capability labels for the Developer Tools category.
+- Record the portal's current block on new skills-only submissions separately
+  from metadata errors. A valid ZIP does not guarantee directory eligibility.
+- Ignore macOS Finder metadata when preparing committed release artifacts.
+
 ## v0.6.0
 
 - Preserve supplied facts, uncertainty, protected strings and code behavior in

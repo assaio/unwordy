@@ -3,3 +3,4 @@ __pycache__/
 .pytest_cache/
 .venv/
 evals/results/
+.DS_Store
